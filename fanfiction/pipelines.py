@@ -5,6 +5,7 @@
 
 import pymongo
 from itemadapter import ItemAdapter
+from fanfiction.items import User, Story
 
 
 class FanfictionPipeline:
@@ -25,11 +26,27 @@ class FanfictionPipeline:
     def open_spider(self, spider):
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
+        # truncate database
+        self.db['users'].delete_many({})
+        self.db['stories'].delete_many({})
 
     def close_spider(self, spider):
         self.client.close()
 
     def process_item(self, item, spider):
+        # author = item.pop('author')
+        # user_id = self.db['users'].insert_one(author).inserted_id
+        print(type(item))
+        if isinstance(item, User):
+            return self.process_user(item, spider)
+        elif isinstance(item, Story):
+            return self.process_story(item, spider)
+        return item
+
+    def process_story(self, item, spider):
         item = ItemAdapter(item).asdict()
         story_id = self.db['stories'].insert_one(item).inserted_id
-        return item
+
+    def process_user(self, item, spider):
+        item = ItemAdapter(item).asdict()
+        user_id = self.db['users'].insert_one(item).inserted_id
