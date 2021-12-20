@@ -1,10 +1,11 @@
 from abc import ABC
 from datetime import datetime
 
-from scrapy.linkextractors import LinkExtractor
-from scrapy.spiders import CrawlSpider, Rule
 from scrapy.http import Request
+from scrapy.linkextractors import LinkExtractor
 from scrapy.loader import ItemLoader
+from scrapy.spiders import CrawlSpider, Rule
+
 from fanfiction.items import Story, User
 
 
@@ -27,8 +28,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
         # category_list = response.css('span.topic-title-big a::text').getall()
         # print(category_list)
         for item in response.css('div.storylist-item'):
-            story_url = 'https://www.fanfiktion.de' + item.css('div.huge-font a::attr(href)').get()
-            user_url = 'https://www.fanfiktion.de' + item.css('div.padded-small-vertical a::attr(href)').get()
+            story_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
+            user_url = response.urljoin(item.css('div.padded-small-vertical a::attr(href)').get())
             yield Request(user_url, callback=self.parse_user)
             yield Request(story_url, callback=self.parse_story)
 
@@ -36,6 +37,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         loader = ItemLoader(item=Story(), selector=response)
         left = loader.nested_css('div.story-left')
         left.add_css('title', 'div.huge-font a')
+        left.add_value('authorUrl', response.urljoin(response.css('div.center.small-font a::attr(href)').get()))
         left.add_value('url', response.url)
         loader.add_value('createdAt', datetime.utcnow())
         loader.add_value('updatedAt', datetime.utcnow())

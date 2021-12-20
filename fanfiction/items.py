@@ -12,13 +12,13 @@ from w3lib.html import remove_tags
 class User(Item):
     name = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
     url = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
-    createdAt = Field(output_processor=Join())
-    updatedAt = Field(output_processor=Join())
+    createdAt = Field(output_processor=TakeFirst())
+    updatedAt = Field(output_processor=TakeFirst())
 
 
 class Story(Item):
     title = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
-    url = Field(output_processor=Join())
+    url = Field(output_processor=TakeFirst())
     summary = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
     status = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
     likes = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
@@ -26,9 +26,9 @@ class Story(Item):
     hits = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
     internalId = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
     categoryList = Field(output_processor=Join())
-    sourceId = Field()
-    authorId = Field()
-    genreId = Field()
-    ratingId = Field()
-    createdAt = Field(output_processor=Join())
-    updatedAt = Field(output_processor=Join())
+    sourceId = Field(output_processor=TakeFirst())
+    authorUrl = Field(input_processor=MapCompose(remove_tags), output_processor=TakeFirst())
+    genreId = Field(output_processor=TakeFirst())
+    ratingId = Field(output_processor=TakeFirst())
+    createdAt = Field(output_processor=TakeFirst())
+    updatedAt = Field(output_processor=TakeFirst())
