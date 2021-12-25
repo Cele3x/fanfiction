@@ -39,6 +39,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
         left.add_css('title', 'div.huge-font a')
         left.add_value('authorUrl', response.urljoin(response.css('div.center.small-font a::attr(href)').get()))
         left.add_value('url', response.url)
+        left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
+        left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
         loader.add_value('createdAt', datetime.utcnow())
         loader.add_value('updatedAt', datetime.utcnow())
         yield loader.load_item()
