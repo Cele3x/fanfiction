@@ -6,7 +6,7 @@
 import pymongo
 from itemadapter import ItemAdapter
 from fanfiction.items import User, Story
-from utilities import merge_dict
+from fanfiction.utilities import merge_dict
 
 
 class FanfictionPipeline:
