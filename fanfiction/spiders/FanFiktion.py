@@ -36,11 +36,24 @@ class FanfiktionSpider(CrawlSpider, ABC):
     def parse_story(self, response):
         loader = ItemLoader(item=Story(), selector=response)
         left = loader.nested_css('div.story-left')
-        left.add_css('title', 'div.huge-font a')
+        left.add_css('title', 'h4.huge-font')
+        left.add_css('summary', 'div#story-summary-inline')
+        left.add_css('category', 'div.small-font.center.block')
+        if response.xpath('//span[contains(@title, "Fertiggestellt")]'):
+            left.add_value('status', 'done')
+        elif response.xpath('//span[contains(@title, "in Arbeit")]'):
+            left.add_value('status', 'work in progress')
+        elif response.xpath('//span[contains(@title, "Pausiert")]'):  # TODO: title text 'Pausiert' just assumed
+            left.add_value('status', 'paused')
+        elif response.xpath('//span[contains(@title, "Abgebrochen")]'):
+            left.add_value('status', 'cancelled')
+        left.add_xpath('likes', '//span[contains(@title, "Empfehlungen")]/../text()')
+        left.add_css('characters', 'span.badge-character')
         left.add_value('authorUrl', response.urljoin(response.css('div.center.small-font a::attr(href)').get()))
         left.add_value('url', response.url)
         left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
         left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
+        loader.add_value('sourceName', 'FanFiktion')
         loader.add_value('createdAt', datetime.utcnow())
         loader.add_value('updatedAt', datetime.utcnow())
         yield loader.load_item()

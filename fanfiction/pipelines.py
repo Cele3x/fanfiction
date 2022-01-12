@@ -48,6 +48,12 @@ class FanfictionPipeline:
     def process_story(self, item):
         # convert story item to dictionary
         item = ItemAdapter(item).asdict()
+
+        # set story source
+        source = self.db['sources'].find_one({'name': item['sourceName']})
+        if source:
+            item['sourceId'] = source['_id']
+
         # search for existing user and set authorId if found or create a rudimentary user
         # user = self.db['users'].find_one_and_update({'name': item['author']}, {'$setOnInsert': {'name': item['author']}}, {'upsert': 'true', 'returnDocument': 'after'})
         # TODO: somethimes there is an age verification required (e.g.: https://www.fanfiktion.de/s/5ead3b92000482001d06c2b9/1/Children-of-Chemos-King)
@@ -57,12 +63,13 @@ class FanfictionPipeline:
         else:
             item['authorId'] = self.process_user(User({'url': item['authorUrl']}))
         del item['authorUrl']
+
         # check if story already exists
         story = self.db['stories'].find_one({'url': item['url']})
-        if story:
+        if story:  # merge and update story
             updated_story = merge_dict(story, item)
             self.db['stories'].update_one({'_id': story['_id']}, {'$set': updated_story})
-        else:
+        else:  # create new story
             self.db['stories'].insert_one(item)
 
     # save user to database
