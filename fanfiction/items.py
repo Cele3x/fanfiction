@@ -6,7 +6,7 @@
 from scrapy.item import Item, Field
 from scrapy.loader import ItemLoader
 from itemloaders.processors import TakeFirst, MapCompose, Join
-from w3lib.html import remove_tags, replace_tags, replace_escape_chars
+from w3lib.html import remove_tags, replace_tags, replace_escape_chars, replace_entities
 
 
 # ItemLoader.default_input_processor = MapCompose(remove_tags, replace_escape_chars)
@@ -40,6 +40,8 @@ class Story(Item):
     internalId = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     categoryList = Field(output_processor=Join())
     sourceName = Field(output_processor=TakeFirst())
+    genreName = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_entities), output_processor=TakeFirst())
+    fandomName = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_entities), output_processor=TakeFirst())
     authorUrl = Field(output_processor=TakeFirst())
     genreId = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     ratingId = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())

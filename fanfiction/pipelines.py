@@ -27,9 +27,9 @@ class FanfictionPipeline:
     def open_spider(self, _spider):
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
-        # truncate database
-        self.db['users'].delete_many({})
-        self.db['stories'].delete_many({})
+        # drop collections
+        self.db['users'].drop()
+        self.db['stories'].drop()
 
     def close_spider(self, _spider):
         self.client.close()
@@ -50,9 +50,29 @@ class FanfictionPipeline:
         item = ItemAdapter(item).asdict()
 
         # set story source
-        source = self.db['sources'].find_one({'name': item['sourceName']})
-        if source:
-            item['sourceId'] = source['_id']
+        if 'sourceName' in item:
+            source = self.db['sources'].find_one({'name': item['sourceName']})
+            if source:
+                item['sourceId'] = source['_id']
+            del item['sourceName']
+
+        # set genre
+        if 'genreName' in item:
+            genre = self.db['genres'].find_one({'$or': [{'name1': item['genreName']}, {'name2': item['genreName']}, {'name3': item['genreName']}]})
+            if genre:
+                item['genreId'] = genre['_id']
+            else:
+                item['genreId'] = self.db['genres'].insert_one({'name1': item['genreName']}).inserted_id
+            del item['genreName']
+
+        # set fandom
+        if 'fandomName' in item:
+            fandom = self.db['fandoms'].find_one({'genreId': item['genreId'], '$or': [{'name1': item['fandomName']}, {'name2': item['fandomName']}, {'name3': item['fandomName']}]})
+            if fandom:
+                item['fandomId'] = fandom['_id']
+            else:
+                item['fandomId'] = self.db['fandoms'].insert_one({'genreId': item['genreId'], 'name1': item['fandomName']}).inserted_id
+            del item['fandomName']
 
         # search for existing user and set authorId if found or create a rudimentary user
         # user = self.db['users'].find_one_and_update({'name': item['author']}, {'$setOnInsert': {'name': item['author']}}, {'upsert': 'true', 'returnDocument': 'after'})

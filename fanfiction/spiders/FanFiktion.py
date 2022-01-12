@@ -43,7 +43,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
             left.add_value('status', 'done')
         elif response.xpath('//span[contains(@title, "in Arbeit")]'):
             left.add_value('status', 'work in progress')
-        elif response.xpath('//span[contains(@title, "Pausiert")]'):  # TODO: title text 'Pausiert' just assumed
+        elif response.xpath('//span[contains(@title, "Pausiert")]'):
             left.add_value('status', 'paused')
         elif response.xpath('//span[contains(@title, "Abgebrochen")]'):
             left.add_value('status', 'cancelled')
@@ -54,6 +54,10 @@ class FanfiktionSpider(CrawlSpider, ABC):
         left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
         left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
         loader.add_value('sourceName', 'FanFiktion')
+        story_path = response.css('#ffcbox-story-topic-1 a').getall()
+        if story_path:
+            loader.add_value('genreName', story_path[1])
+            loader.add_value('fandomName', story_path[2])
         loader.add_value('createdAt', datetime.utcnow())
         loader.add_value('updatedAt', datetime.utcnow())
         yield loader.load_item()
