@@ -1,12 +1,20 @@
 from abc import ABC
-from datetime import datetime
 
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.loader import ItemLoader
 from scrapy.spiders import CrawlSpider, Rule
 
+from w3lib.html import replace_tags, replace_escape_chars
+
 from fanfiction.items import Story, User
+
+
+# find story definitions inside html snippet
+def find_story_definitions(snippet):
+    snippet = replace_escape_chars(snippet)
+    text = replace_tags(snippet, ' / ')
+    return list(filter(None, [x.strip() for x in text.split(' / ')]))
 
 
 class FanfiktionSpider(CrawlSpider, ABC):
@@ -17,11 +25,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
     start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
 
     rules = (
-        # Rule(LinkExtractor(allow=r'/Anime-Manga/'), callback='parse_item', follow=False),
         # Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist div.grid-rowcount3'), callback='parse_item', follow=True),
         Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist'), callback='parse_item', follow=True),
-        # Rule(LinkExtractor(allow=r'^\/u\/', restrict_css='div.storylist'), callback='parse_user', follow=True),
-        # Rule(LinkExtractor(allow=r'^\/s\/', restrict_css='div.storylist'), callback='parse_story', follow=True),
     )
 
     def parse_item(self, response):
@@ -35,10 +40,25 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
     def parse_story(self, response):
         loader = ItemLoader(item=Story(), selector=response)
+
+        # general data
+        loader.add_value('source', 'FanFiktion')
+        story_path = response.css('#ffcbox-story-topic-1 a').getall()
+        if story_path:
+            loader.add_value('genre', story_path[1])
+            loader.add_value('fandom', story_path[2])
+
+        # left side data
         left = loader.nested_css('div.story-left')
         left.add_css('title', 'h4.huge-font')
         left.add_css('summary', 'div#story-summary-inline')
-        left.add_css('category', 'div.small-font.center.block')
+        story_definitions_block = response.css('div.small-font.center.block')
+        if story_definitions_block:
+            definitions = find_story_definitions(story_definitions_block.get())
+            left.add_value('category', definitions[0])
+            left.add_value('topics', definitions[1])
+            left.add_value('rating', definitions[2])
+            left.add_value('pairing', definitions[3])
         if response.xpath('//span[contains(@title, "Fertiggestellt")]'):
             left.add_value('status', 'done')
         elif response.xpath('//span[contains(@title, "in Arbeit")]'):
@@ -53,19 +73,14 @@ class FanfiktionSpider(CrawlSpider, ABC):
         left.add_value('url', response.url)
         left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
         left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
-        loader.add_value('sourceName', 'FanFiktion')
-        story_path = response.css('#ffcbox-story-topic-1 a').getall()
-        if story_path:
-            loader.add_value('genreName', story_path[1])
-            loader.add_value('fandomName', story_path[2])
-        loader.add_value('createdAt', datetime.utcnow())
-        loader.add_value('updatedAt', datetime.utcnow())
+
+        # right side data
+        right = loader.nested_css('div.story-right')
+
         yield loader.load_item()
 
     def parse_user(self, response):
         loader = ItemLoader(item=User(), selector=response)
         loader.add_css('name', 'div.userprofile-bio-table-outer h2')
         loader.add_value('url', response.url)
-        loader.add_value('createdAt', datetime.utcnow())
-        loader.add_value('updatedAt', datetime.utcnow())
         yield loader.load_item()

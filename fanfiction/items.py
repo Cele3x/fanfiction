@@ -12,8 +12,8 @@ from w3lib.html import remove_tags, replace_tags, replace_escape_chars, replace_
 # ItemLoader.default_input_processor = MapCompose(remove_tags, replace_escape_chars)
 # ItemLoader.default_outut_processor = TakeFirst()
 
-def replace_tags_with_whitepace(value):
-    return replace_tags(value, ' ')
+def replace_tags_with_commas(value):
+    return replace_tags(value, ', ')
 
 
 def replace_nbsp(value):
@@ -23,8 +23,6 @@ def replace_nbsp(value):
 class User(Item):
     name = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     url = Field(output_processor=TakeFirst())
-    createdAt = Field(output_processor=TakeFirst())
-    updatedAt = Field(output_processor=TakeFirst())
 
 
 class Story(Item):
@@ -38,14 +36,12 @@ class Story(Item):
     storyCreatedAt = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     storyUpdatedAt = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     internalId = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
-    categoryList = Field(output_processor=Join())
-    sourceName = Field(output_processor=TakeFirst())
-    genreName = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_entities), output_processor=TakeFirst())
-    fandomName = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_entities), output_processor=TakeFirst())
+    source = Field(output_processor=TakeFirst())
+    category = Field(output_processor=TakeFirst())
+    topics = Field(output_processor=TakeFirst())
+    rating = Field(output_processor=TakeFirst())
+    pairing = Field(output_processor=TakeFirst())
+    genre = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_entities), output_processor=TakeFirst())
+    fandom = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_entities), output_processor=TakeFirst())
     authorUrl = Field(output_processor=TakeFirst())
-    genreId = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
-    ratingId = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
-    createdAt = Field(output_processor=TakeFirst())
-    updatedAt = Field(output_processor=TakeFirst())
-    category = Field(input_processor=MapCompose(replace_tags_with_whitepace, replace_escape_chars, str.strip), output_processor=Join())  # PLACEHOLDER
-    characters = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=Join(', '))  # PLACEHOLDER
+    characters = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=Join(', '))
