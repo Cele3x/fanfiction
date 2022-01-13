@@ -28,6 +28,25 @@ genres = [
 ]
 db['genres'].insert_many(genres)
 
+# CATEGORIES
+db['categories'].drop()
+categories = [
+    {'name1': 'Aufzählung/Liste', 'name2': None, 'name3': None},
+    {'name1': 'Chat/Interview/Quiz', 'name2': None, 'name3': None},
+    {'name1': 'Crossover', 'name2': None, 'name3': None},
+    {'name1': 'Drabble', 'name2': None, 'name3': None},
+    {'name1': 'Gedicht', 'name2': None, 'name3': None},
+    {'name1': 'Geschichte', 'name2': None, 'name3': None},
+    {'name1': 'Kurzgeschichte', 'name2': None, 'name3': None},
+    {'name1': 'Leseprobe', 'name2': None, 'name3': None},
+    {'name1': 'Liedtext', 'name2': None, 'name3': None},
+    {'name1': 'Mitmachgeschichte', 'name2': None, 'name3': None},
+    {'name1': 'Oneshot', 'name2': None, 'name3': None},
+    {'name1': 'Sammlung', 'name2': None, 'name3': None},
+    {'name1': 'Songfic', 'name2': None, 'name3': None},
+]
+db['categories'].insert_many(categories)
+
 # TOPICS
 db['topics'].drop()
 topics = [
