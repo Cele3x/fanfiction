@@ -39,7 +39,7 @@ class User(Item):
 class Story(Item):
     title = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     url = Field(output_processor=TakeFirst())
-    summary = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_nbsp), output_processor=TakeFirst())
+    summary = Field(output_processor=TakeFirst())
     status = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())
     likes = Field(input_processor=MapCompose(remove_tags, replace_escape_chars, replace_nbsp), output_processor=TakeFirst())
     follows = Field(input_processor=MapCompose(remove_tags, replace_escape_chars), output_processor=TakeFirst())

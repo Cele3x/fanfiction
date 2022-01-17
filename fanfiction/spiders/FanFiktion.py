@@ -57,7 +57,11 @@ class FanfiktionSpider(CrawlSpider, ABC):
         # left side data
         left = loader.nested_css('div.story-left')
         left.add_css('title', 'h4.huge-font')
-        left.add_css('summary', 'div#story-summary-inline')
+        summary_text = response.css('div#story-summary-inline *::text').get()
+        if summary_text:
+            if summary_text == '(Der Autor hat keine Kurzbeschreibung zu dieser Geschichte verfasst.)':
+                summary_text = None
+            left.add_value('summary', summary_text)
         story_definitions_block = response.css('div.small-font.center.block')
         if story_definitions_block:
             definitions = find_story_definitions(story_definitions_block.get())
