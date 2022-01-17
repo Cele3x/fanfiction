@@ -4,10 +4,11 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 import pymongo
+import re
 from typing import Union
 from datetime import datetime
 from itemadapter import ItemAdapter
-from fanfiction.items import User, Story
+from fanfiction.items import User, Story, Chapter
 from fanfiction.utilities import merge_dict
 
 
@@ -47,6 +48,7 @@ class FanfictionPipeline:
         self.db['story_topics'].drop()
         self.db['story_characters'].drop()
         self.db['stories'].drop()
+        self.db['chapters'].drop()
 
     def close_spider(self, _spider):
         """Disconnects from MongoDB when done with current spider.
@@ -55,7 +57,7 @@ class FanfictionPipeline:
         """
         self.client.close()
 
-    def process_item(self, item: Union[User, Story], _spider):
+    def process_item(self, item: Union[User, Story, Chapter], _spider):
         """Determines the type of item and calls its save function accordingly.
         Return value with e.g. a user ID cannot be used since function calls are asynchronous.
 
@@ -68,6 +70,8 @@ class FanfictionPipeline:
             return self.process_user(item)
         elif isinstance(item, Story):
             return self.process_story(item)
+        elif isinstance(item, Chapter):
+            return self.process_chapter(item)
         else:
             print('Passed item object is not type of the allowed types!')
 
@@ -142,7 +146,7 @@ class FanfictionPipeline:
         del item['authorUrl']
 
         # exclude item keys that are processed later
-        excluded_keys = ['topics', 'characters']
+        excluded_keys = ['topics', 'characters', 'chapterNumber', 'chapterTitle', 'chapterContent', 'chapterNotes', 'chapterPublishedOn', 'chapterReviewedOn']
         story_item = {k: item[k] for k in set(list(item.keys())) - set(excluded_keys)}
         # check if story already exists
         story = self.db['stories'].find_one({'url': story_item['url']})
@@ -184,7 +188,35 @@ class FanfictionPipeline:
                     self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
             del item['characters']
 
-    # save user to database
+        # set chapter items
+        # check if chapter already exists for story
+        if 'chapterContent' in item:
+            chapter = self.db['chapters'].find_one({'storyId': story_id, 'number': item['chapterNumber']})
+            if chapter is None:
+                self.db['chapters'].insert_one({'story_id': story_id, 'number': item['chapterNumber'], 'title': item['chapterTitle'],
+                                                'content': item['chapterContent'], 'notes': None, 'publishedOn': None, 'reviewedOn': None,
+                                                'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
+
+    def process_chapter(self, item: Chapter):
+        """Save Chapter object to database.
+
+        :param item: Chapter
+        """
+        item = ItemAdapter(item).asdict()
+        # check if chapter already exists
+        story_url = re.sub(r'/\d+/', '/1/', item['chapterUrl'])
+        story = self.db['stories'].find_one({'url': story_url})
+        if story:
+            chapter = self.db['chapters'].find_one({'storyId': story['_id'], 'number': item['chapterNumber']})
+            if chapter:  # merge and update chapter
+                item['updatedAt'] = datetime.utcnow()
+                updated_chapter = merge_dict(chapter, item)
+                self.db['chapters'].update_one({'_id': chapter['_id']}, {'$set': updated_chapter})
+            else:  # create new chapter
+                item['createdAt'] = datetime.utcnow()
+                item['updatedAt'] = datetime.utcnow()
+                self.db['chapters'].insert_one(item)
+
     def process_user(self, item: User):
         """Save User object to the database.
 

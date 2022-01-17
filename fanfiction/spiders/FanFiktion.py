@@ -1,3 +1,4 @@
+import re
 from abc import ABC
 
 from scrapy.http import Request
@@ -7,25 +8,25 @@ from scrapy.spiders import CrawlSpider, Rule
 
 from w3lib.html import replace_tags, replace_escape_chars
 
-from fanfiction.items import Story, User
+from fanfiction.items import Story, Chapter, User
 
 
-def find_story_definitions(snippet: str):
+def find_story_definitions(text: str) -> list:
     """Find story definitions inside HTML snippet.
 
-    :param snippet: str
+    :param text: str
         with HTML elements containing tags and excape chars
     :return: list
         with elements split by ' / ' character
     """
-    snippet = replace_escape_chars(snippet)
-    text = replace_tags(snippet, ' / ')
+    text = replace_escape_chars(text)
+    text = replace_tags(text, ' / ')
     return list(filter(None, [x.strip() for x in text.split(' / ')]))
 
 
 class FanfiktionSpider(CrawlSpider, ABC):
     name = 'FanFiktion'
-    # download_delay = 1
+    download_delay = 1
     allowed_domains = ['fanfiktion.de']
     # start_urls = ['https://www.fanfiktion.de/Fanfiction/c/100000000']
     start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
@@ -38,10 +39,20 @@ class FanfiktionSpider(CrawlSpider, ABC):
     def parse_item(self, response):
         """Processes item by evaluating their type and passing it to the appropriate parser."""
         for item in response.css('div.storylist-item'):
-            story_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
             user_url = response.urljoin(item.css('div.padded-small-vertical a::attr(href)').get())
+            story_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
+            chapter_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
             yield Request(user_url, callback=self.parse_user)
             yield Request(story_url, callback=self.parse_story)
+            # yield Request(chapter_url, callback=self.parse_chapter)
+            # for chapter in response.css('#kA option'):
+            #     onchange = chapter.xpath("//../select[@id = 'kA']//@onchange").get()
+            #     href_parts = re.findall(r'\'(.*?)\'', onchange)
+            #     chapter_url = response.urljoin(href_parts[0] + chapter.css('::attr(value)').get() + href_parts[1])
+            #     yield Request(chapter_url, callback=self.parse_chapter)
+            next_chapter = response.xpath('//a[contains(@title, "nächstes Kapitel")]/@href').get()
+            if next_chapter is not None:
+                yield response.follow(next_chapter, callback=self.parse_chapter)
 
     def parse_story(self, response):
         """Parses story item."""
@@ -84,10 +95,36 @@ class FanfiktionSpider(CrawlSpider, ABC):
         left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
         left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
 
-        # right side data
+        # first chapter has to be scraped here because scrapy will detect that the page had already been scraped and omit it
         right = loader.nested_css('div.story-right')
+        right.add_css('chapterContent', 'div#storytext')
+        chapter_number = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/@value').get()
+        if chapter_number:
+            loader.add_value('chapterNumber', chapter_number)
+        chapter_title = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/text()').get()
+        if chapter_title:
+            chapter_title = re.sub(r'^\d+\.\s?', '', chapter_title)
+            loader.add_value('chapterTitle', chapter_title)
 
         yield loader.load_item()
+
+    def parse_chapter(self, response):
+        """Parses chapter."""
+        loader = ItemLoader(item=Chapter(), selector=response)
+        loader.add_value('storyUrl', response.url)
+        loader.add_css('content', 'div#storytext')
+        chapter_number = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/@value').get()
+        if chapter_number:
+            loader.add_value('number', chapter_number)
+        chapter_title = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/text()').get()
+        if chapter_title:
+            chapter_title = re.sub(r'^\d+\.\s?', '', chapter_title)
+            loader.add_value('title', chapter_title)
+        yield loader.load_item()
+
+        next_chapter = response.xpath('//a[contains(@title, "nächstes Kapitel")]/@href').get()
+        if next_chapter is not None:
+            yield response.follow(next_chapter, callback=self.parse_chapter)
 
     def parse_user(self, response):
         """Parses user item."""
