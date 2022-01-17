@@ -10,8 +10,14 @@ from w3lib.html import replace_tags, replace_escape_chars
 from fanfiction.items import Story, User
 
 
-# find story definitions inside html snippet
-def find_story_definitions(snippet):
+def find_story_definitions(snippet: str):
+    """Find story definitions inside HTML snippet.
+
+    :param snippet: str
+        with HTML elements containing tags and excape chars
+    :return: list
+        with elements split by ' / ' character
+    """
     snippet = replace_escape_chars(snippet)
     text = replace_tags(snippet, ' / ')
     return list(filter(None, [x.strip() for x in text.split(' / ')]))
@@ -30,8 +36,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
     )
 
     def parse_item(self, response):
-        # category_list = response.css('span.topic-title-big a::text').getall()
-        # print(category_list)
+        """Processes item by evaluating their type and passing it to the appropriate parser."""
         for item in response.css('div.storylist-item'):
             story_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
             user_url = response.urljoin(item.css('div.padded-small-vertical a::attr(href)').get())
@@ -39,6 +44,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
             yield Request(story_url, callback=self.parse_story)
 
     def parse_story(self, response):
+        """Parses story item."""
         loader = ItemLoader(item=Story(), selector=response)
 
         # general data
@@ -80,6 +86,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         yield loader.load_item()
 
     def parse_user(self, response):
+        """Parses user item."""
         loader = ItemLoader(item=User(), selector=response)
         loader.add_css('name', 'div.userprofile-bio-table-outer h2')
         loader.add_value('url', response.url)

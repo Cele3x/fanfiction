@@ -4,19 +4,30 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 from scrapy.item import Item, Field
-from scrapy.loader import ItemLoader
 from itemloaders.processors import TakeFirst, MapCompose, Join
 from w3lib.html import remove_tags, replace_tags, replace_escape_chars, replace_entities
 
 
-# ItemLoader.default_input_processor = MapCompose(remove_tags, replace_escape_chars)
-# ItemLoader.default_outut_processor = TakeFirst()
+def replace_tags_with_commas(value: str) -> str:
+    """Replaces HTML tags with commas.
 
-def replace_tags_with_commas(value):
+    :param value: str
+        containing HTML tags
+    :return: str
+        where HTML tags got replaced with commas
+    """
     return replace_tags(value, ', ')
 
 
-def replace_nbsp(value):
+def replace_nbsp(value: str) -> str:
+    """Replaces non-breaking space characters (NBSP) with a space.
+    Scrapy does not replace these by default.
+
+    :param value: str
+        containing NBSP characters
+    :return: str
+        where NBSP characters got replaced with spaces
+    """
     return value.replace(u'\xa0', u' ')
 
 

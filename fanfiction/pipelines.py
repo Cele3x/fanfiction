@@ -4,15 +4,23 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 import pymongo
+from typing import Union
+from datetime import datetime
 from itemadapter import ItemAdapter
 from fanfiction.items import User, Story
 from fanfiction.utilities import merge_dict
-from datetime import datetime
 
 
 class FanfictionPipeline:
 
-    def __init__(self, mongo_uri, mongo_db):
+    def __init__(self, mongo_uri: str, mongo_db: str):
+        """Initializes FanFiction pipeline.
+
+        :param mongo_uri: str
+            Uri to MongoDB database
+        :param mongo_db: str
+            Name of MongoDB database
+        """
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
         self.db = None
@@ -26,6 +34,10 @@ class FanfictionPipeline:
         )
 
     def open_spider(self, _spider):
+        """Connects to MongoDB and drops all existing collections containing dynamic data.
+
+        :param _spider: Any
+        """
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
         # drop collections
@@ -37,20 +49,33 @@ class FanfictionPipeline:
         self.db['stories'].drop()
 
     def close_spider(self, _spider):
+        """Disconnects from MongoDB when done with current spider.
+
+        :param _spider: Any
+        """
         self.client.close()
 
-    # determine type of item and call its save function accordingly
-    def process_item(self, item, _spider):
-        # author = item.pop('author')
-        # user_id = self.db['users'].insert_one(author).inserted_id
+    def process_item(self, item: Union[User, Story], _spider):
+        """Determines the type of item and calls its save function accordingly.
+        Return value with e.g. a user ID cannot be used since function calls are asynchronous.
+
+        :param item: User | Story
+            The item object to process
+        :param _spider: Any
+            The currently processed spider
+        """
         if isinstance(item, User):
             return self.process_user(item)
         elif isinstance(item, Story):
             return self.process_story(item)
-        return item
+        else:
+            print('Passed item object is not type of the allowed types!')
 
-    # save story to database
-    def process_story(self, item):
+    def process_story(self, item: Story):
+        """Save Story object to the database.
+
+        :param item: Story
+        """
         # convert story item to dictionary
         item = ItemAdapter(item).asdict()
 
@@ -160,7 +185,11 @@ class FanfictionPipeline:
             del item['characters']
 
     # save user to database
-    def process_user(self, item):
+    def process_user(self, item: User):
+        """Save User object to the database.
+
+        :param item: User
+        """
         item = ItemAdapter(item).asdict()
         # check if user already exists
         user = self.db['users'].find_one({'url': item['url']})
