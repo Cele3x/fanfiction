@@ -26,7 +26,7 @@ def find_story_definitions(text: str) -> list:
 
 class FanfiktionSpider(CrawlSpider, ABC):
     name = 'FanFiktion'
-    download_delay = 1
+    download_delay = 2
     allowed_domains = ['fanfiktion.de']
     # start_urls = ['https://www.fanfiktion.de/Fanfiction/c/100000000']
     start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
@@ -109,7 +109,6 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
         next_chapter = response.xpath('//a[contains(@title, "nächstes Kapitel")]/@href').get()
         if next_chapter is not None:
-            print('CHAPTER 2')
             yield response.follow(next_chapter, callback=self.parse_chapter)
 
     def parse_chapter(self, response):
@@ -128,7 +127,6 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
         next_chapter = response.xpath('//a[contains(@title, "nächstes Kapitel")]/@href').get()
         if next_chapter is not None:
-            print('CHAPTER 3 OR FOLLOWING')
             yield response.follow(next_chapter, callback=self.parse_chapter)
 
     def parse_user(self, response):
