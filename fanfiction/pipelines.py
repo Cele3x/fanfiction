@@ -188,14 +188,14 @@ class FanfictionPipeline:
                     self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
             del item['characters']
 
-        # set chapter items
-        # check if chapter already exists for story
-        if 'chapterContent' in item:
-            chapter = self.db['chapters'].find_one({'storyId': story_id, 'number': item['chapterNumber']})
-            if chapter is None:
-                self.db['chapters'].insert_one({'story_id': story_id, 'number': item['chapterNumber'], 'title': item['chapterTitle'],
-                                                'content': item['chapterContent'], 'notes': None, 'publishedOn': None, 'reviewedOn': None,
-                                                'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
+        # # set chapter items
+        # # check if chapter already exists for story
+        # if 'chapterContent' in item:
+        #     chapter = self.db['chapters'].find_one({'storyId': story_id, 'number': item['chapterNumber']})
+        #     if chapter is None:
+        #         self.db['chapters'].insert_one({'story_id': story_id, 'number': item['chapterNumber'], 'title': item['chapterTitle'],
+        #                                         'content': item['chapterContent'], 'notes': None, 'publishedOn': None, 'reviewedOn': None,
+        #                                         'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
 
     def process_chapter(self, item: Chapter):
         """Save Chapter object to database.
@@ -204,10 +204,11 @@ class FanfictionPipeline:
         """
         item = ItemAdapter(item).asdict()
         # check if chapter already exists
-        story_url = re.sub(r'/\d+/', '/1/', item['chapterUrl'])
+        story_url = re.sub(r'/\d+/', '/1/', item['storyUrl'])
         story = self.db['stories'].find_one({'url': story_url})
-        if story:
-            chapter = self.db['chapters'].find_one({'storyId': story['_id'], 'number': item['chapterNumber']})
+        if story and 'number' in item:
+            item['storyId'] = story['_id']
+            chapter = self.db['chapters'].find_one({'storyId': story['_id'], 'number': item['number']})
             if chapter:  # merge and update chapter
                 item['updatedAt'] = datetime.utcnow()
                 updated_chapter = merge_dict(chapter, item)
