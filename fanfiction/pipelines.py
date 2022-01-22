@@ -100,15 +100,6 @@ class FanfictionPipeline:
                 item['genreId'] = self.db['genres'].insert_one({'name1': item['genre'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
             del item['genre']
 
-        # set fandom
-        if 'fandom' in item:
-            fandom = self.db['fandoms'].find_one({'genreId': item['genreId'], '$or': [{'name1': item['fandom']}, {'name2': item['fandom']}, {'name3': item['fandom']}]})
-            if fandom:
-                item['fandomId'] = fandom['_id']
-            else:
-                item['fandomId'] = self.db['fandoms'].insert_one({'genreId': item['genreId'], 'name1': item['fandom'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
-            del item['fandom']
-
         # set rating
         if 'rating' in item:
             rating = self.db['ratings'].find_one({'$or': [{'name1': item['rating']}, {'name2': item['rating']}, {'name3': item['rating']}]})
@@ -129,7 +120,7 @@ class FanfictionPipeline:
 
         # search for existing user and set authorId if found or create a rudimentary user
         # user = self.db['users'].find_one_and_update({'name': item['author']}, {'$setOnInsert': {'name': item['author']}}, {'upsert': 'true', 'returnDocument': 'after'})
-        # TODO: sometimes there is an age verification required (e.g.: https://www.fanfiktion.de/s/5ead3b92000482001d06c2b9/1/Children-of-Chemos-King) -> crawl between 11pm-4am
+        # sometimes there is an age verification required (e.g.: https://www.fanfiktion.de/s/5ead3b92000482001d06c2b9/1/Children-of-Chemos-King) -> crawl between 11pm-4am
         user = self.db['users'].find_one({'url': item['authorUrl']})
         if user:
             item['authorId'] = user['_id']
@@ -138,7 +129,7 @@ class FanfictionPipeline:
         del item['authorUrl']
 
         # exclude item keys that are processed later
-        excluded_keys = ['topics', 'characters', 'chapterNumber', 'chapterTitle', 'chapterContent', 'chapterNotes', 'chapterPublishedOn', 'chapterReviewedOn']
+        excluded_keys = ['topics', 'characters', 'fandoms']
         story_item = {k: item[k] for k in set(list(item.keys())) - set(excluded_keys)}
         # check if story already exists
         story = self.db['stories'].find_one({'url': story_item['url']})
@@ -150,6 +141,21 @@ class FanfictionPipeline:
             story_item['createdAt'] = datetime.utcnow()
             story_item['updatedAt'] = datetime.utcnow()
             story_id = self.db['stories'].insert_one(story_item).inserted_id
+
+        # set fandoms for story
+        fandom_id = None
+        if 'fandoms' in item:
+            for f in item['fandoms'].split(', '):
+                fandom = self.db['fandom'].find_one({'$or': [{'name1': f}, {'name2': f}, {'name3': f}]})
+                if fandom:
+                    fandom_id = fandom['_id']
+                else:
+                    fandom_id = self.db['fandoms'].insert_one({'name1': f}).inserted_id
+                # check if fandom already exists for story
+                story_fandom = self.db['story_fandoms'].find_one({'storyId': story_id, 'fandomId': fandom_id})
+                if story_fandom is None:
+                    self.db['story_fandoms'].insert_one({'storyId': story_id, 'fandomId': fandom_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
+            del item['fandoms']
 
         # set topics for story
         if 'topics' in item:
@@ -168,7 +174,6 @@ class FanfictionPipeline:
         # set characters for story
         if 'characters' in item:
             for c in item['characters'].split(', '):
-                fandom_id = item['fandomId'] if 'fandomId' in item else None
                 character = self.db['characters'].find_one({'fandomId': fandom_id, '$or': [{'name1': c}, {'name2': c}, {'name3': c}]})
                 if character:
                     character_id = character['_id']
@@ -179,15 +184,6 @@ class FanfictionPipeline:
                 if story_characters is None:
                     self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
             del item['characters']
-
-        # # set chapter items
-        # # check if chapter already exists for story
-        # if 'chapterContent' in item:
-        #     chapter = self.db['chapters'].find_one({'storyId': story_id, 'number': item['chapterNumber']})
-        #     if chapter is None:
-        #         self.db['chapters'].insert_one({'story_id': story_id, 'number': item['chapterNumber'], 'title': item['chapterTitle'],
-        #                                         'content': item['chapterContent'], 'notes': None, 'publishedOn': None, 'reviewedOn': None,
-        #                                         'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
 
     def process_chapter(self, item: Chapter):
         """Save Chapter object to database.

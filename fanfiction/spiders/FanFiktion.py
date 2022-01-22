@@ -41,15 +41,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
         for item in response.css('div.storylist-item'):
             user_url = response.urljoin(item.css('div.padded-small-vertical a::attr(href)').get())
             story_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
-            chapter_url = response.urljoin(item.css('div.huge-font a::attr(href)').get())
             yield Request(user_url, callback=self.parse_user)
             yield Request(story_url, callback=self.parse_story)
-            # yield Request(chapter_url, callback=self.parse_chapter)
-            # for chapter in response.css('#kA option'):
-            #     onchange = chapter.xpath("//../select[@id = 'kA']//@onchange").get()
-            #     href_parts = re.findall(r'\'(.*?)\'', onchange)
-            #     chapter_url = response.urljoin(href_parts[0] + chapter.css('::attr(value)').get() + href_parts[1])
-            #     yield Request(chapter_url, callback=self.parse_chapter)
 
     def parse_story(self, response):
         """Parses story item."""
@@ -60,7 +53,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         story_path = response.css('#ffcbox-story-topic-1 a').getall()
         if story_path:
             loader.add_value('genre', story_path[1])
-            loader.add_value('fandom', story_path[2])
+            loader.add_value('fandoms', story_path[2])
 
         # left side data
         left = loader.nested_css('div.story-left')
