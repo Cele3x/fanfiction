@@ -110,6 +110,30 @@ class FanfiktionSpider(CrawlSpider, ABC):
     def parse_user(self, response):
         """Parses user item."""
         loader = ItemLoader(item=User(), selector=response)
-        loader.add_css('name', 'div.userprofile-bio-table-outer h2')
+        loader.add_css('username', 'div.userprofile-bio-table-outer h2')
         loader.add_value('url', response.url)
+
+        bio_table = loader.nested_css('div.userprofile-bio-table')
+        bio_table.add_xpath('firstName', '//div[contains(text(), "Vorname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('lastName', '//div[contains(text(), "Nachname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('locatedAt', '//div[contains(text(), "Wohnort")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('country', '//div[contains(text(), "Land")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        gender = response.css('div.userprofile-bio-table').xpath('//div[contains(text(), "Geschlecht")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()').get()
+        if gender == 'männlich':
+            bio_table.add_value('gender', 'male')
+        elif gender == 'weiblich':
+            bio_table.add_value('gender', 'female')
+        elif gender == 'divers':
+            bio_table.add_value('gender', 'other')
+        bio_table.add_xpath('age', '//div[contains(text(), "Alter")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+
+        story_related = loader.nested_css('div#ffcbox-stories')
+        if response.css('div#ffcbox-stories-layer-aboutme div.status-message').xpath('//div[contains(text(), "Dieser Benutzer hat keine Informationen über sich veröffentlicht.")]'):
+            story_related.add_value('bio', None)
+        else:
+            story_related.add_css('bio', 'div#ffcbox-stories-layer-aboutme')
+        # not working since box with content is loaded via javascript
+        # story_related.add_value('favoredStories', response.urljoin(response.css('div#ffcbox-stories-layer-favstorynickdetails a.hint--large::attr(href)').getall()))
+        # story_related.add_value('favoredAuthors', response.urljoin(response.css('div#ffcbox-stories-layer-favauthornickdetails a::attr(href)').getall()))
+
         yield loader.load_item()

@@ -19,22 +19,22 @@ CREATE TABLE `series_stories`
 
 CREATE TABLE `stories`
 (
-    `_id`        BIGINT PRIMARY KEY,
-    `title`      VARCHAR(255),
-    `url`        VARCHAR(255),
-    `summary`    TEXT,
-    `status`     ENUM ('work in progress', 'done', 'paused', 'cancelled'),
-    `likes`      BIGINT,
-    `follows`    BIGINT,
-    `hits`       BIGINT,
-    `sourceId`   BIGINT,
-    `authorId`   BIGINT,
-    `genreId`    BIGINT,
-    `ratingId`   BIGINT,
-    `categoryId` BIGINT,
-    `pairingId` BIGINT,
+    `_id`         BIGINT PRIMARY KEY,
+    `title`       VARCHAR(255),
+    `url`         VARCHAR(255),
+    `summary`     TEXT,
+    `status`      ENUM ('work in progress', 'done', 'paused', 'cancelled'),
+    `likes`       BIGINT,
+    `follows`     BIGINT,
+    `hits`        BIGINT,
+    `sourceId`    BIGINT,
+    `authorId`    BIGINT,
+    `genreId`     BIGINT,
+    `ratingId`    BIGINT,
+    `categoryId`  BIGINT,
+    `pairingId`   BIGINT,
     `publishedOn` DATE,
-    `reviewedOn` DATE
+    `reviewedOn`  DATE
 );
 
 CREATE TABLE `chapters`
@@ -63,15 +63,17 @@ CREATE TABLE `story_fandoms`
 
 CREATE TABLE `users`
 (
-    `_id`        BIGINT PRIMARY KEY,
-    `internalId` BIGINT,
-    `name`       VARCHAR(255),
-    `joinedOn`   DATE,
-    `locatedAt`  VARCHAR(255),
-    `country`    VARCHAR(255),
-    `gender`     VARCHAR(255),
-    `age`        VARCHAR(255),
-    `bio`        TEXT
+    `_id`       BIGINT PRIMARY KEY,
+    `url`       VARCHAR(255),
+    `username`  VARCHAR(255),
+    `firstName` VARCHAR(255),
+    `lastName`  VARCHAR(255),
+    `joinedOn`  DATE,
+    `locatedAt` VARCHAR(255),
+    `country`   VARCHAR(255),
+    `gender`    ENUM ('male', 'female', 'other'),
+    `age`       VARCHAR(255),
+    `bio`       LONGTEXT
 );
 
 CREATE TABLE `favored_stories`

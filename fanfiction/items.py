@@ -58,14 +58,22 @@ DEFAULT_INPUT_PROCESSORS = MapCompose(replace_tags_with_spaces, replace_escape_c
 
 
 class User(Item):
-    name = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    username = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     url = Field(output_processor=TakeFirst())
+    firstName = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    lastName = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    joinedOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    locatedAt = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    country = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    gender = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    age = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    bio = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
 
 
 class Story(Item):
-    title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     url = Field(output_processor=TakeFirst())
-    summary = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    summary = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     status = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     likes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     follows = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
@@ -73,7 +81,7 @@ class Story(Item):
     publishedOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     reviewedOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     source = Field(output_processor=TakeFirst())
-    category = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    category = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     topics = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     rating = Field(output_processor=TakeFirst())
     pairing = Field(output_processor=TakeFirst())
@@ -85,9 +93,9 @@ class Story(Item):
 
 class Chapter(Item):
     number = Field(output_processor=TakeFirst())
-    title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    notes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    notes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     publishedOn = Field(output_processor=TakeFirst())
     reviewedOn = Field(output_processor=TakeFirst())
     storyUrl = Field(output_processor=TakeFirst())
