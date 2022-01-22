@@ -92,27 +92,11 @@ class FanfiktionSpider(CrawlSpider, ABC):
         left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
         left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
 
-        # first chapter has to be scraped here because scrapy will detect that the page had already been scraped and omit it
-        chapter_loader = ItemLoader(item=Chapter(), selector=response.css('div.story-right'))
-        chapter_loader.add_value('storyUrl', response.url)
-        chapter_loader.add_css('content', 'div#storytext')
-        chapter_number = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/@value').get()
-        if chapter_number:
-            chapter_loader.add_value('number', chapter_number)
-        chapter_title = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/text()').get()
-        if chapter_title:
-            chapter_title = re.sub(r'^\d+\.\s?', '', chapter_title)
-            chapter_loader.add_value('title', chapter_title)
-
         yield loader.load_item()
-        yield chapter_loader.load_item()
-
-        next_chapter = response.xpath('//a[contains(@title, "nächstes Kapitel")]/@href').get()
-        if next_chapter is not None:
-            yield response.follow(next_chapter, callback=self.parse_chapter)
+        yield from self.parse_chapter(response)
 
     def parse_chapter(self, response):
-        """Parses chapter 2 and following."""
+        """Parses chapters and following."""
         loader = ItemLoader(item=Chapter(), selector=response)
         loader.add_value('storyUrl', response.url)
         loader.add_css('content', 'div#storytext')
