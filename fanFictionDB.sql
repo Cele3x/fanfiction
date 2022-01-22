@@ -27,13 +27,14 @@ CREATE TABLE `stories`
     `likes`      BIGINT,
     `follows`    BIGINT,
     `hits`       BIGINT,
-    `internalId` BIGINT,
     `sourceId`   BIGINT,
     `authorId`   BIGINT,
     `genreId`    BIGINT,
     `ratingId`   BIGINT,
     `categoryId` BIGINT,
-    `pairingId` BIGINT
+    `pairingId` BIGINT,
+    `publishedOn` DATE,
+    `reviewedOn` DATE
 );
 
 CREATE TABLE `chapters`
