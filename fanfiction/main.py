@@ -1,4 +1,19 @@
 from scrapy import cmdline
+from settings import MONGO_URI, MONGO_DB
+from pymongo import MongoClient
+
+# connect to MongoDB
+client = MongoClient(MONGO_URI)
+db = client[MONGO_DB]
+
+# drop dynamic collections that are not prefilled with seed data
+static_collections = ['sources', 'genres', 'categories', 'topics', 'ratings', 'pairings']
+dynamic_collections = db.list_collection_names(filter={'name': {'$nin': static_collections}})
+for collection in dynamic_collections:
+    db[collection].drop()
+
+# close client
+client.close()
 
 cmdline.execute('scrapy crawl FanFiktion'.split())
 

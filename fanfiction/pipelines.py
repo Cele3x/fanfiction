@@ -41,14 +41,6 @@ class FanfictionPipeline:
         """
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
-        # drop collections
-        self.db['users'].drop()
-        self.db['fandoms'].drop()
-        self.db['characters'].drop()
-        self.db['story_topics'].drop()
-        self.db['story_characters'].drop()
-        self.db['stories'].drop()
-        self.db['chapters'].drop()
 
     def close_spider(self, _spider):
         """Disconnects from MongoDB when done with current spider.
