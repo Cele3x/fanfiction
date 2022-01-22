@@ -89,8 +89,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
         left.add_css('characters', 'span.badge-character')
         left.add_value('authorUrl', response.urljoin(response.css('div.center.small-font a::attr(href)').get()))
         left.add_value('url', response.url)
-        left.add_xpath('storyCreatedAt', '//span[contains(@title, "erstellt")]/../text()')
-        left.add_xpath('storyUpdatedAt', '//span[contains(@title, "aktualisiert")]/../text()')
+        left.add_xpath('publishedOn', '//span[contains(@title, "erstellt")]/../text()')
+        left.add_xpath('reviewedOn', '//span[contains(@title, "aktualisiert")]/../text()')
 
         yield loader.load_item()
         yield from self.parse_chapter(response)
@@ -100,6 +100,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         loader = ItemLoader(item=Chapter(), selector=response)
         loader.add_value('storyUrl', response.url)
         loader.add_css('content', 'div#storytext')
+        loader.add_xpath('publishedOn', '//span[contains(@title, "Kapitel erstellt am")]/../text()')
         chapter_number = response.xpath('//select[@id="kA"]/option[contains(@selected, "selected")]/@value').get()
         if chapter_number:
             loader.add_value('number', chapter_number)
