@@ -48,6 +48,10 @@ class FanfiktionSpider(CrawlSpider, ABC):
         """Parses story item."""
         loader = ItemLoader(item=Story(), selector=response)
 
+        # mark stories with age verification
+        if response.css('div#content > div.pageviewframe').xpath('//div[contains(text(), "Meldung")]'):
+            loader.add_value('ageVerification', True)
+
         # general data
         loader.add_value('source', 'FanFiktion')
         story_path = response.css('#ffcbox-story-topic-1 a').getall()
