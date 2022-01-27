@@ -89,6 +89,7 @@ class Story(Item):
     fandoms = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     authorUrl = Field(output_processor=TakeFirst())
     characters = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    ageVerification = Field(output_processor=TakeFirst())
 
 
 class Chapter(Item):
@@ -100,3 +101,13 @@ class Chapter(Item):
     reviewedOn = Field(output_processor=TakeFirst())
     storyUrl = Field(output_processor=TakeFirst())
     storyId = Field()
+
+
+class Review(Item):
+    userUrl = Field(output_processor=TakeFirst())
+    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    reviewedOn = Field(output_processor=TakeFirst())
+    reviewableType = Field(output_processor=TakeFirst())
+    reviewableUrl = Field(output_processor=TakeFirst())
+    answeredOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    answer = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))

@@ -169,7 +169,7 @@ CREATE TABLE `reviews`
     `_id`            BIGINT PRIMARY KEY,
     `userId`         BIGINT,
     `content`        TEXT,
-    `reviewedOn`     DATEtime,
+    `reviewedOn`     DATETIME,
     `parentId`       BIGINT,
     `reviewableType` VARCHAR(255) COMMENT 'Story or Chapter',
     `reviewableId`   BIGINT

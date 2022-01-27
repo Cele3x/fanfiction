@@ -8,7 +8,7 @@ import re
 from typing import Union
 from datetime import datetime
 from itemadapter import ItemAdapter
-from fanfiction.items import User, Story, Chapter
+from fanfiction.items import User, Story, Chapter, Review
 from fanfiction.utilities import merge_dict
 
 
@@ -64,6 +64,8 @@ class FanfictionPipeline:
             return self.process_story(item)
         elif isinstance(item, Chapter):
             return self.process_chapter(item)
+        elif isinstance(item, Review):
+            return self.process_review(item)
         else:
             print('Passed item object is not type of the allowed types!')
 
@@ -136,7 +138,8 @@ class FanfictionPipeline:
         if story:  # merge and update story
             story_item['updatedAt'] = datetime.utcnow()
             updated_story = merge_dict(story, story_item)
-            story_id = self.db['stories'].update_one({'_id': story['_id']}, {'$set': updated_story})
+            self.db['stories'].update_one({'_id': story['_id']}, {'$set': updated_story})
+            story_id = story['_id']
         else:  # create new story
             story_item['createdAt'] = datetime.utcnow()
             story_item['updatedAt'] = datetime.utcnow()
@@ -146,11 +149,11 @@ class FanfictionPipeline:
         fandom_id = None
         if 'fandoms' in item:
             for f in item['fandoms'].split(', '):
-                fandom = self.db['fandom'].find_one({'$or': [{'name1': f}, {'name2': f}, {'name3': f}]})
+                fandom = self.db['fandoms'].find_one({'$or': [{'name1': f}, {'name2': f}, {'name3': f}]})
                 if fandom:
                     fandom_id = fandom['_id']
                 else:
-                    fandom_id = self.db['fandoms'].insert_one({'name1': f}).inserted_id
+                    fandom_id = self.db['fandoms'].insert_one({'name1': f, 'name2': None, 'name3': None, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()}).inserted_id
                 # check if fandom already exists for story
                 story_fandom = self.db['story_fandoms'].find_one({'storyId': story_id, 'fandomId': fandom_id})
                 if story_fandom is None:
@@ -178,7 +181,7 @@ class FanfictionPipeline:
                 if character:
                     character_id = character['_id']
                 else:
-                    character_id = self.db['characters'].insert_one({'fandomId': fandom_id, 'name1': c, 'name2': None, 'name3': None}).inserted_id
+                    character_id = self.db['characters'].insert_one({'fandomId': fandom_id, 'name1': c, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
                 # check if character already exists for story
                 story_characters = self.db['story_characters'].find_one({'storyId': story_id, 'characterId': character_id})
                 if story_characters is None:
@@ -215,8 +218,24 @@ class FanfictionPipeline:
         # check if user already exists
         user = self.db['users'].find_one({'url': item['url']})
         if user:
+            user['updatedAt'] = datetime.utcnow()
             updated_user = merge_dict(user, item)
             self.db['users'].update_one({'_id': user['_id']}, {'$set': updated_user})
             return user['_id']
         else:
             return self.db['users'].insert_one(item).inserted_id
+
+    def process_review(self, item: Review):
+        """Save Review object to the database.
+
+        :param item: Review
+        """
+        item = ItemAdapter(item).asdict()
+        # check if user already exists
+        review = self.db['reviews'].find_one({'userUrl': item['userUrl'], 'reviewedOn': item['reviewedOn']})
+        if review:
+            review['updatedAt'] = datetime.utcnow()
+            updated_review = merge_dict(review, item)
+            self.db['reviews'].update_one({'_id': review['_id']}, {'$set': updated_review})
+        else:
+            self.db['reviews'].insert_one(item)

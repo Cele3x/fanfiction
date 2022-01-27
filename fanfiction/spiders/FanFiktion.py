@@ -1,5 +1,6 @@
 import re
 from abc import ABC
+from fanfiction.utilities import get_datetime, get_date
 
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
@@ -8,7 +9,7 @@ from scrapy.spiders import CrawlSpider, Rule
 
 from w3lib.html import replace_tags, replace_escape_chars
 
-from fanfiction.items import Story, Chapter, User
+from fanfiction.items import Story, Chapter, User, Review
 
 
 def find_story_definitions(text: str) -> list:
@@ -28,8 +29,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
     name = 'FanFiktion'
     download_delay = 2
     allowed_domains = ['fanfiktion.de']
-    # start_urls = ['https://www.fanfiktion.de/Fanfiction/c/100000000']
-    start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
+    start_urls = ['https://www.fanfiktion.de/Fanfiction/c/100000000']
+    # start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
 
     rules = (
         # Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist div.grid-rowcount3'), callback='parse_item', follow=True),
@@ -92,6 +93,10 @@ class FanfiktionSpider(CrawlSpider, ABC):
         yield loader.load_item()
         yield from self.parse_chapter(response)
 
+        review = response.css('div.story-left').xpath('//div[contains(text(), "Alle Kapitel")]/descendant-or-self::a/@href').get()
+        if review:
+            yield response.follow(review, callback=self.parse_reviews, cb_kwargs=dict(story_url=response.url))
+
     def parse_chapter(self, response):
         """Parses chapters and following."""
         loader = ItemLoader(item=Chapter(), selector=response)
@@ -108,7 +113,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         yield loader.load_item()
 
         next_chapter = response.xpath('//a[contains(@title, "nächstes Kapitel")]/@href').get()
-        if next_chapter is not None:
+        if next_chapter:
             yield response.follow(next_chapter, callback=self.parse_chapter)
 
     def parse_user(self, response):
@@ -141,3 +146,31 @@ class FanfiktionSpider(CrawlSpider, ABC):
         # story_related.add_value('favoredAuthors', response.urljoin(response.css('div#ffcbox-stories-layer-favauthornickdetails a::attr(href)').getall()))
 
         yield loader.load_item()
+
+    def parse_reviews(self, response, story_url):
+        """Parses review items."""
+        # TODO: multiple pages (e.g. https://www.fanfiktion.de/r/s/4204eb8b0000146d067007d0/date/0/1)
+        for review in response.css('div.review'):
+            loader = ItemLoader(item=Review(), selector=review)
+
+            # left side data
+            left = loader.nested_css('div.review-left')
+            user_url = review.css('div.review-left').xpath('//a[starts-with(@href, "/u/")]/@href').get()
+            if user_url:
+                left.add_value('userUrl', response.urljoin(user_url))
+            reviewed_on = review.css('div.review-left').xpath('//div[contains(text(), "Uhr")]/text()').get()
+            if reviewed_on:
+                left.add_value('reviewedOn', get_datetime(reviewed_on))
+            if review.css('div.review-left').xpath('//i[contains(text(), "Kapitel")]'):  # review for Chapter
+                left.add_value('reviewableType', 'Chapter')
+                reviewable_url = review.css('div.review-left').xpath('//a[starts-with(@href, "/s/")]/@href').get()
+                left.add_value('reviewableUrl', response.urljoin(reviewable_url))
+            else:  # review for Story
+                left.add_value('reviewableType', 'Story')
+                left.add_value('reviewableUrl', story_url)
+
+            # right side data
+            right = loader.nested_css('div.review-right')
+            right.add_css('content', 'div.reviewtext')
+
+            yield loader.load_item()
