@@ -4,7 +4,6 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 import pymongo
-import re
 from typing import Union
 from datetime import datetime
 from itemadapter import ItemAdapter
@@ -69,9 +68,10 @@ class FanfictionPipeline:
         else:
             print('Passed item object is not type of the allowed types!')
 
-    def process_story(self, item: Story):
+    def process_story(self, item: Story) -> [str, None]:
         """Save Story object to the database.
 
+        :return: id of updated or created story or None
         :param item: Story
         """
         # convert story item to dictionary
@@ -121,29 +121,37 @@ class FanfictionPipeline:
             del item['pairing']
 
         # search for existing user and set authorId if found or create a rudimentary user
-        # user = self.db['users'].find_one_and_update({'name': item['author']}, {'$setOnInsert': {'name': item['author']}}, {'upsert': 'true', 'returnDocument': 'after'})
-        # sometimes there is an age verification required (e.g.: https://www.fanfiktion.de/s/5ead3b92000482001d06c2b9/1/Children-of-Chemos-King) -> crawl between 11pm-4am
-        user = self.db['users'].find_one({'url': item['authorUrl']})
-        if user:
-            item['authorId'] = user['_id']
-        else:
-            item['authorId'] = self.process_user(User({'url': item['authorUrl']}))
-        del item['authorUrl']
+        if 'authorUrl' in item:
+            user = self.db['users'].find_one({'url': item['authorUrl']})
+            if user:
+                item['authorId'] = user['_id']
+            else:
+                item['authorId'] = self.process_user(User({'url': item['authorUrl']}))
+            del item['authorUrl']
 
         # exclude item keys that are processed later
-        excluded_keys = ['topics', 'characters', 'fandoms']
+        excluded_keys = ['fandoms', 'topics', 'characters']
         story_item = {k: item[k] for k in set(list(item.keys())) - set(excluded_keys)}
-        # check if story already exists
-        story = self.db['stories'].find_one({'url': story_item['url']})
-        if story:  # merge and update story
-            story_item['updatedAt'] = datetime.utcnow()
-            updated_story = merge_dict(story, story_item)
-            self.db['stories'].update_one({'_id': story['_id']}, {'$set': updated_story})
-            story_id = story['_id']
-        else:  # create new story
-            story_item['createdAt'] = datetime.utcnow()
-            story_item['updatedAt'] = datetime.utcnow()
-            story_id = self.db['stories'].insert_one(story_item).inserted_id
+        if 'url' in story_item:
+            if 'likes' in story_item and story_item['likes']:
+                story_item['likes'] = int(story_item['likes'])
+            if 'follows' in story_item and story_item['follows']:
+                story_item['follows'] = int(story_item['follows'])
+            if 'hits' in story_item and story_item['hits']:
+                story_item['hits'] = int(story_item['hits'])
+            # check if story already exists
+            story = self.db['stories'].find_one({'url': story_item['url']})
+            if story:  # merge and update story
+                story_item['updatedAt'] = datetime.utcnow()
+                updated_story = merge_dict(story, story_item)
+                self.db['stories'].update_one({'_id': story['_id']}, {'$set': updated_story})
+                story_id = story['_id']
+            else:  # create new story
+                story_item['createdAt'] = datetime.utcnow()
+                story_item['updatedAt'] = datetime.utcnow()
+                story_id = self.db['stories'].insert_one(story_item).inserted_id
+        else:
+            return None
 
         # set fandoms for story
         fandom_id = None
@@ -187,55 +195,132 @@ class FanfictionPipeline:
                 if story_characters is None:
                     self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
             del item['characters']
+        return story_id
 
-    def process_chapter(self, item: Chapter):
+    def process_chapter(self, item: Chapter) -> [str, None]:
         """Save Chapter object to database.
 
+        :return: id of updated or created chapter
         :param item: Chapter
         """
         item = ItemAdapter(item).asdict()
-        # check if chapter already exists
-        story_url = re.sub(r'/\d+/', '/1/', item['storyUrl'])
-        story = self.db['stories'].find_one({'url': story_url})
-        if story and 'number' in item:
-            item['storyId'] = story['_id']
-            chapter = self.db['chapters'].find_one({'storyId': story['_id'], 'number': item['number']})
+        if 'storyUrl' in item:
+            # check if story already exists
+            story = self.db['stories'].find_one({'url': item['storyUrl']})
+            if story:
+                item['storyId'] = story['_id']
+            else:
+                item['storyId'] = self.process_story(Story({'url': item['storyUrl']}))
+            del item['storyUrl']
+        else:
+            return None
+
+        if 'url' in item:
+            if 'number' in item and item['number']:
+                item['number'] = int(item['number'])
+            # check if chapter already exists
+            chapter = self.db['chapters'].find_one({'url': item['url']})
             if chapter:  # merge and update chapter
                 item['updatedAt'] = datetime.utcnow()
                 updated_chapter = merge_dict(chapter, item)
                 self.db['chapters'].update_one({'_id': chapter['_id']}, {'$set': updated_chapter})
+                return chapter['_id']
             else:  # create new chapter
                 item['createdAt'] = datetime.utcnow()
                 item['updatedAt'] = datetime.utcnow()
-                self.db['chapters'].insert_one(item)
+                return self.db['chapters'].insert_one(item).inserted_id
+        return None
 
-    def process_user(self, item: User):
+    def process_user(self, item: User) -> [str, None]:
         """Save User object to the database.
 
+        :return: id of updated or created user
         :param item: User
         """
-        item = ItemAdapter(item).asdict()
-        # check if user already exists
-        user = self.db['users'].find_one({'url': item['url']})
-        if user:
-            user['updatedAt'] = datetime.utcnow()
-            updated_user = merge_dict(user, item)
-            self.db['users'].update_one({'_id': user['_id']}, {'$set': updated_user})
-            return user['_id']
-        else:
-            return self.db['users'].insert_one(item).inserted_id
 
-    def process_review(self, item: Review):
+        item = ItemAdapter(item).asdict()
+
+        # set user source
+        if 'source' in item:
+            source = self.db['sources'].find_one({'name': item['source']})
+            if source:
+                item['sourceId'] = source['_id']
+            del item['source']
+
+        if 'url' in item:
+            # check if user already exists
+            user = self.db['users'].find_one({'url': item['url']})
+            if user:
+                item['updatedAt'] = datetime.utcnow()
+                updated_user = merge_dict(user, item)
+                self.db['users'].update_one({'_id': user['_id']}, {'$set': updated_user})
+                return user['_id']
+            else:
+                item['createdAt'] = datetime.utcnow()
+                item['updatedAt'] = datetime.utcnow()
+                return self.db['users'].insert_one(item).inserted_id
+        return None
+
+    def process_review(self, item: Review) -> [str, None]:
         """Save Review object to the database.
 
+        :return: id of updated or created review
         :param item: Review
         """
+
         item = ItemAdapter(item).asdict()
-        # check if user already exists
-        review = self.db['reviews'].find_one({'userUrl': item['userUrl'], 'reviewedOn': item['reviewedOn']})
-        if review:
-            review['updatedAt'] = datetime.utcnow()
-            updated_review = merge_dict(review, item)
-            self.db['reviews'].update_one({'_id': review['_id']}, {'$set': updated_review})
+
+        if 'parentUserUrl' in item and 'parentReviewedAt' in item and 'parentReviewableType' in item and 'parentReviewableUrl' in item:
+            parent_review = Review({'userUrl': item['parentUserUrl'], 'reviewedAt': item['parentReviewedAt'], 'reviewableType': item['parentReviewableType'], 'reviewableUrl': item['parentReviewableUrl']})
+            item['parentId'] = self.process_review(parent_review)
+            del item['parentUserUrl']
+            del item['parentReviewedAt']
+            del item['parentReviewableType']
+            del item['parentReviewableUrl']
         else:
-            self.db['reviews'].insert_one(item)
+            item['parentId'] = None
+
+        if 'userUrl' in item:
+            # check if review user already exists
+            user = self.db['users'].find_one({'url': item['userUrl']})
+            if user:
+                item['userId'] = user['_id']
+            else:
+                item['userId'] = self.process_user(User({'url': item['userUrl']}))
+            del item['userUrl']
+        else:
+            return None
+
+        if 'reviewableType' in item and 'reviewableUrl' in item:
+            if item['reviewableType'] == 'Chapter':
+                # check if chapter already exists
+                chapter = self.db['chapters'].find_one({'url': item['reviewableUrl']})
+                if chapter:
+                    item['reviewableId'] = chapter['_id']
+                else:
+                    item['reviewableId'] = self.process_chapter(Chapter({'url': item['reviewableUrl']}))
+            if item['reviewableType'] == 'Story':
+                # check if story already exists
+                story = self.db['stories'].find_one({'url': item['reviewableUrl']})
+                if story:
+                    item['reviewableId'] = story['_id']
+                else:
+                    item['reviewableId'] = self.process_story(Story({'url': item['reviewableUrl']}))
+            del item['reviewableUrl']
+        else:
+            return None
+
+        if 'reviewedAt' in item:
+            # check if review already exists
+            review = self.db['reviews'].find_one({'userId': item['userId'], 'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
+            if review:
+                item['updatedAt'] = datetime.utcnow()
+                updated_review = merge_dict(review, item)
+                self.db['reviews'].update_one({'_id': review['_id']}, {'$set': updated_review})
+                return review['_id']
+            else:
+                item['createdAt'] = datetime.utcnow()
+                item['updatedAt'] = datetime.utcnow()
+                return self.db['reviews'].insert_one(item).inserted_id
+        else:
+            return None

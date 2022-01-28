@@ -68,6 +68,7 @@ class User(Item):
     gender = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     age = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     bio = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    source = Field(output_processor=TakeFirst())
 
 
 class Story(Item):
@@ -78,15 +79,15 @@ class Story(Item):
     likes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     follows = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     hits = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    publishedOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    reviewedOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
+    publishedOn = Field(output_processor=TakeFirst())
+    reviewedOn = Field(output_processor=TakeFirst())
     source = Field(output_processor=TakeFirst())
     category = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     topics = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     rating = Field(output_processor=TakeFirst())
     pairing = Field(output_processor=TakeFirst())
     genre = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    fandoms = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    fandoms = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(' - '))
     authorUrl = Field(output_processor=TakeFirst())
     characters = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     ageVerification = Field(output_processor=TakeFirst())
@@ -99,15 +100,17 @@ class Chapter(Item):
     notes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     publishedOn = Field(output_processor=TakeFirst())
     reviewedOn = Field(output_processor=TakeFirst())
+    url = Field(output_processor=TakeFirst())
     storyUrl = Field(output_processor=TakeFirst())
-    storyId = Field()
 
 
 class Review(Item):
     userUrl = Field(output_processor=TakeFirst())
     content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
-    reviewedOn = Field(output_processor=TakeFirst())
+    reviewedAt = Field(output_processor=TakeFirst())
     reviewableType = Field(output_processor=TakeFirst())
     reviewableUrl = Field(output_processor=TakeFirst())
-    answeredOn = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    answer = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    parentUserUrl = Field(output_processor=TakeFirst())
+    parentReviewedAt = Field(output_processor=TakeFirst())
+    parentReviewableType = Field(output_processor=TakeFirst())
+    parentReviewableUrl = Field(output_processor=TakeFirst())

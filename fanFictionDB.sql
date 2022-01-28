@@ -73,7 +73,8 @@ CREATE TABLE `users`
     `country`   VARCHAR(255),
     `gender`    ENUM ('male', 'female', 'other'),
     `age`       VARCHAR(255),
-    `bio`       LONGTEXT
+    `bio`       LONGTEXT,
+    `sourceId`  BIGINT
 );
 
 CREATE TABLE `favored_stories`
