@@ -32,6 +32,8 @@ Twisted==21.7.0
 typing_extensions==4.0.1
 w3lib==1.22.0
 zope.interface==5.4.0
-
+fake-useragent==0.1.11
+faker==12.0.0
+scrapy-fake-useragent==1.4.4
 pymongo~=4.0.1
 python-dateutil~=2.8.2
