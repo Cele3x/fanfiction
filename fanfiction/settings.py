@@ -16,7 +16,7 @@ SPIDER_MODULES = ['fanfiction.spiders']
 NEWSPIDER_MODULE = 'fanfiction.spiders'
 
 # Directory for storing job information for pausing crawls
-JOBDIR = 'crawls'
+# JOBDIR = 'crawls'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'fanfiction (+http://www.yourdomain.com)'

@@ -36,4 +36,5 @@ fake-useragent==0.1.11
 faker==12.0.0
 scrapy-fake-useragent==1.4.4
 pymongo~=4.0.1
+dnspython==2.2.0
 python-dateutil~=2.8.2

@@ -107,3 +107,5 @@ db['pairings'].insert_many(pairings)
 # ]
 # db['fandoms'].insert_many(fandoms)
 
+client.close()
+

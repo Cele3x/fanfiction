@@ -105,6 +105,7 @@ class Chapter(Item):
 
 
 class Review(Item):
+    url = Field(output_processor=TakeFirst())
     userUrl = Field(output_processor=TakeFirst())
     content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     reviewedAt = Field(output_processor=TakeFirst())

@@ -68,14 +68,16 @@ class FanfictionPipeline:
         else:
             print('Passed item object is not type of the allowed types!')
 
-    def process_story(self, item: Story) -> [str, None]:
+    def process_story(self, item: Story, is_preliminary=False) -> [str, None]:
         """Save Story object to the database.
 
         :return: id of updated or created story or None
         :param item: Story
+        :param is_preliminary: Boolean indicating if the reason for creating the story is for association purposes
         """
         # convert story item to dictionary
         item = ItemAdapter(item).asdict()
+        item['isPreliminary'] = is_preliminary
 
         # set story source
         if 'source' in item:
@@ -126,7 +128,7 @@ class FanfictionPipeline:
             if user:
                 item['authorId'] = user['_id']
             else:
-                item['authorId'] = self.process_user(User({'url': item['authorUrl']}))
+                item['authorId'] = self.process_user(User({'url': item['authorUrl']}), True)
             del item['authorUrl']
 
         # exclude item keys that are processed later
@@ -197,20 +199,23 @@ class FanfictionPipeline:
             del item['characters']
         return story_id
 
-    def process_chapter(self, item: Chapter) -> [str, None]:
+    def process_chapter(self, item: Chapter, is_preliminary=False) -> [str, None]:
         """Save Chapter object to database.
 
         :return: id of updated or created chapter
         :param item: Chapter
+        :param is_preliminary: Boolean indicating if the reason for creating the user is for association purposes
         """
         item = ItemAdapter(item).asdict()
+        item['isPreliminary'] = is_preliminary
+
         if 'storyUrl' in item:
             # check if story already exists
             story = self.db['stories'].find_one({'url': item['storyUrl']})
             if story:
                 item['storyId'] = story['_id']
             else:
-                item['storyId'] = self.process_story(Story({'url': item['storyUrl']}))
+                item['storyId'] = self.process_story(Story({'url': item['storyUrl']}), True)
             del item['storyUrl']
         else:
             return None
@@ -231,14 +236,16 @@ class FanfictionPipeline:
                 return self.db['chapters'].insert_one(item).inserted_id
         return None
 
-    def process_user(self, item: User) -> [str, None]:
+    def process_user(self, item: User, is_preliminary=False) -> [str, None]:
         """Save User object to the database.
 
         :return: id of updated or created user
         :param item: User
+        :param is_preliminary: Boolean indicating if the reason for creating the user is for association purposes
         """
 
         item = ItemAdapter(item).asdict()
+        item['isPreliminary'] = is_preliminary
 
         # set user source
         if 'source' in item:
@@ -286,7 +293,7 @@ class FanfictionPipeline:
             if user:
                 item['userId'] = user['_id']
             else:
-                item['userId'] = self.process_user(User({'url': item['userUrl']}))
+                item['userId'] = self.process_user(User({'url': item['userUrl']}), True)
             del item['userUrl']
         else:
             return None
@@ -298,14 +305,14 @@ class FanfictionPipeline:
                 if chapter:
                     item['reviewableId'] = chapter['_id']
                 else:
-                    item['reviewableId'] = self.process_chapter(Chapter({'url': item['reviewableUrl']}))
+                    item['reviewableId'] = self.process_chapter(Chapter({'url': item['reviewableUrl']}), True)
             if item['reviewableType'] == 'Story':
                 # check if story already exists
                 story = self.db['stories'].find_one({'url': item['reviewableUrl']})
                 if story:
                     item['reviewableId'] = story['_id']
                 else:
-                    item['reviewableId'] = self.process_story(Story({'url': item['reviewableUrl']}))
+                    item['reviewableId'] = self.process_story(Story({'url': item['reviewableUrl']}), True)
             del item['reviewableUrl']
         else:
             return None
@@ -313,6 +320,10 @@ class FanfictionPipeline:
         if 'reviewedAt' in item:
             # check if review already exists
             review = self.db['reviews'].find_one({'userId': item['userId'], 'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
+            # TODO: check
+            if item['reviewableId'] is None:
+                print('reviewableId is None!')
+                print(item)
             if review:
                 item['updatedAt'] = datetime.utcnow()
                 updated_review = merge_dict(review, item)

@@ -1,8 +1,12 @@
 import re
+from fanfiction.settings import MONGO_URI, MONGO_DB
+from pymongo import MongoClient
 from abc import ABC
 from fanfiction.utilities import get_datetime, get_date
 
 from scrapy.http import Request
+from scrapy import signals
+from pydispatch import dispatcher
 from scrapy.linkextractors import LinkExtractor
 from scrapy.loader import ItemLoader
 from scrapy.spiders import CrawlSpider, Rule
@@ -43,8 +47,16 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
     rules = (
         Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist'), callback='parse_item', follow=True),
-        # Rule(LinkExtractor(allow=r'The-Magical-Maniac\/c\/'), callback='parse_item', follow=True),
     )
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+        self.client = MongoClient(MONGO_URI)
+        self.db = self.client[MONGO_DB]
+
+    def spider_closed(self, _spider):
+        self.client.close()
 
     def parse_item(self, response):
         """Processes item by evaluating their type and passing it to the appropriate parser."""
@@ -52,9 +64,12 @@ class FanfiktionSpider(CrawlSpider, ABC):
             user_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/u/")]/@href').get())
             story_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/s/")]/@href').get())
             reviews_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/r/s/")]/@href').get())
-            yield Request(user_url, callback=self.parse_user)
-            yield Request(reviews_url, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
-            yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url))
+            if self.db['users'].find_one({'url': user_url, 'isPreliminary': False}) is None:
+                yield Request(user_url, callback=self.parse_user)
+            if self.db['reviews'].find_one({'url': reviews_url}) is None:
+                yield Request(reviews_url, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
+            if self.db['stories'].find_one({'url': story_url, 'isPreliminary': False}) is None:
+                yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url))
 
     def parse_story(self, response, user_url):
         """Parses story item."""
@@ -107,7 +122,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
             left.add_value('reviewedOn', get_date(''.join(reviewed_on)))
 
         yield loader.load_item()
-        yield from self.parse_chapter(response, response.url)
+        if self.db['chapters'].find_one({'url': response.url}) is None:
+            yield from self.parse_chapter(response, response.url)
 
     def parse_chapter(self, response, story_url):
         """Parses chapters and following."""
@@ -170,6 +186,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         """Parses review items."""
         for review in response.css('div.review'):
             loader = ItemLoader(item=Review(), selector=review)
+            loader.add_value('url', response.url)
 
             # left side data
             left = loader.nested_css('div.review-left')
@@ -177,7 +194,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
             user_url = left_sel.xpath('.//a[starts-with(@href, "/u/")]/@href').get()
             if user_url:
                 left.add_value('userUrl', response.urljoin(user_url))
-                yield response.follow(user_url, callback=self.parse_user)
+                if self.db['users'].find_one({'url': response.urljoin(user_url), 'isPreliminary': False}) is None:
+                    yield response.follow(user_url, callback=self.parse_user)
 
             reviewed_at = left_sel.xpath('.//div[contains(text(), "Uhr")]/text()').get()
             if reviewed_at:
@@ -227,4 +245,3 @@ class FanfiktionSpider(CrawlSpider, ABC):
         next_reviews = response.css('link[rel="next"]::attr(href)').get()
         if next_reviews:
             yield response.follow(next_reviews, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
-

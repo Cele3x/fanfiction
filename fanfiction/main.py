@@ -15,9 +15,9 @@ from pymongo import MongoClient
 # # close client
 # client.close()
 
-# cmdline.execute('scrapy crawl FanFiktion'.split())
+cmdline.execute('scrapy crawl FanFiktion'.split())
 
 # for pausing and resuming crawls
 # when pausing this crawl, resume it with the same command
 # YOU HAVE TO WAIT FOR CLOSING THE JOB WITH JUST ONE CTRL-C (FORCING WON'T WORK)!
-cmdline.execute('scrapy crawl FanFiktion -s JOBDIR=crawls/FanFiktion-1'.split())
+# cmdline.execute('scrapy crawl FanFiktion -s JOBDIR=crawls/FanFiktion-1'.split())
