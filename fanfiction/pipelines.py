@@ -217,8 +217,6 @@ class FanfictionPipeline:
             else:
                 item['storyId'] = self.process_story(Story({'url': item['storyUrl']}), True)
             del item['storyUrl']
-        else:
-            return None
 
         if 'url' in item:
             if 'number' in item and item['number']:
@@ -277,7 +275,9 @@ class FanfictionPipeline:
 
         item = ItemAdapter(item).asdict()
 
-        if 'parentUserUrl' in item and 'parentReviewedAt' in item and 'parentReviewableType' in item and 'parentReviewableUrl' in item:
+        if 'parentReviewedAt' in item and 'parentReviewableType' in item and 'parentReviewableUrl' in item:
+            if 'parentUserUrl' not in item:
+                item['parentUserUrl'] = None
             parent_review = Review({'userUrl': item['parentUserUrl'], 'reviewedAt': item['parentReviewedAt'], 'reviewableType': item['parentReviewableType'], 'reviewableUrl': item['parentReviewableUrl']})
             item['parentId'] = self.process_review(parent_review)
             del item['parentUserUrl']
@@ -296,7 +296,8 @@ class FanfictionPipeline:
                 item['userId'] = self.process_user(User({'url': item['userUrl']}), True)
             del item['userUrl']
         else:
-            return None
+            # anonymous user
+            item['userId'] = None
 
         if 'reviewableType' in item and 'reviewableUrl' in item:
             if item['reviewableType'] == 'Chapter':
@@ -319,11 +320,10 @@ class FanfictionPipeline:
 
         if 'reviewedAt' in item:
             # check if review already exists
-            review = self.db['reviews'].find_one({'userId': item['userId'], 'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
-            # TODO: check
-            if item['reviewableId'] is None:
-                print('reviewableId is None!')
-                print(item)
+            if item['userId']:
+                review = self.db['reviews'].find_one({'userId': item['userId'], 'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
+            else:  # anonymous user
+                review = self.db['reviews'].find_one({'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
             if review:
                 item['updatedAt'] = datetime.utcnow()
                 updated_review = merge_dict(review, item)

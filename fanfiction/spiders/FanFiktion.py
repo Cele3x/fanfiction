@@ -55,7 +55,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         self.client = MongoClient(MONGO_URI)
         self.db = self.client[MONGO_DB]
 
-    def spider_closed(self, _spider):
+    def spider_closed(self, spider):
         self.client.close()
 
     def parse_item(self, response):
