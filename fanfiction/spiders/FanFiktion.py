@@ -30,17 +30,16 @@ class FanfiktionSpider(CrawlSpider, ABC):
     name = 'FanFiktion'
     download_delay = 1
     allowed_domains = ['fanfiktion.de']
-    # start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
-    start_urls = ['https://www.fanfiktion.de/Anime-Manga/c/102000000',
-                  'https://www.fanfiktion.de/Buecher/c/103000000',
-                  'https://www.fanfiktion.de/Cartoons-Comics/c/105000000',
-                  'https://www.fanfiktion.de/Computerspiele/c/106000000',
-                  'https://www.fanfiktion.de/Crossover/c/107000000',
-                  'https://www.fanfiktion.de/Kino-TV-Filme/c/104000000',
-                  'https://www.fanfiktion.de/Musicals/c/110000000',
-                  'https://www.fanfiktion.de/Prominente/c/109000000',
-                  'https://www.fanfiktion.de/Serien-Podcasts/c/101000000',
-                  'https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
+
+    start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
+    # start_urls = ['https://www.fanfiktion.de/Musicals/c/110000000']
+    # start_urls = ['https://www.fanfiktion.de/Crossover/c/107000000']
+    # start_urls = ['https://www.fanfiktion.de/Cartoons-Comics/c/105000000']
+    # start_urls = ['https://www.fanfiktion.de/Computerspiele/c/106000000']
+    # start_urls = ['https://www.fanfiktion.de/Kino-TV-Filme/c/104000000']
+    # start_urls = ['https://www.fanfiktion.de/Serien-Podcasts/c/101000000']
+    # start_urls = ['https://www.fanfiktion.de/Buecher/c/103000000']
+    # start_urls = ['https://www.fanfiktion.de/Anime-Manga/c/102000000']
 
     rules = (
         Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist'), callback='parse_item', follow=True),
