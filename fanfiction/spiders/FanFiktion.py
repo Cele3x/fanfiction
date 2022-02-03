@@ -81,7 +81,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
         # general data
         loader.add_value('source', 'FanFiktion')
-        story_path = response.css('#ffcbox-story-topic-1 a').getall()
+        story_path = response.css('#ffcbox-story-topic-1 a::text').getall()
         if story_path:
             loader.add_value('genre', story_path[1])
             loader.add_value('fandoms', story_path[2:-1])  # TODO: maybe add specialized functions for e.g. 'FFs' or 'Prominente' items
