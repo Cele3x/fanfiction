@@ -64,14 +64,19 @@ class FanfiktionSpider(CrawlSpider, ABC):
             user_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/u/")]/@href').get())
             story_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/s/")]/@href').get())
             reviews_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/r/s/")]/@href').get())
+            total_review_count = item.xpath('.//a[starts-with(@href, "/r/s/")]/text()').get()
             if self.db['users'].find_one({'url': user_url, 'isPreliminary': False}) is None:
                 yield Request(user_url, callback=self.parse_user)
-            if self.db['reviews'].find_one({'url': reviews_url}) is None:
+            story = self.db['stories'].find_one({'url': story_url})
+            review = self.db['reviews'].find_one({'url': reviews_url})
+            has_missing_reviews = 'currentReviewCount' not in story or 'totalReviewCount' not in story or int(story['totalReviewCount']) == 0 or int(story['currentReviewCount']) < int(story['totalReviewCount'])
+            if review is None or has_missing_reviews:
                 yield Request(reviews_url, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
-            if self.db['stories'].find_one({'url': story_url, 'isPreliminary': False}) is None:
-                yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url))
+            has_missing_chapters = 'currentChapterCount' not in story or 'totalChapterCount' not in story or int(story['totalChapterCount']) == 0 or int(story['currentChapterCount']) < int(story['totalChapterCount'])
+            if story is None or has_missing_chapters:
+                yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url, total_review_count=total_review_count))
 
-    def parse_story(self, response, user_url):
+    def parse_story(self, response, user_url, total_review_count):
         """Parses story item."""
         loader = ItemLoader(item=Story(), selector=response)
 
@@ -120,10 +125,14 @@ class FanfiktionSpider(CrawlSpider, ABC):
         reviewed_on = left_sel.xpath('.//span[contains(@title, "aktualisiert")]/../text()').getall()
         if reviewed_on:
             left.add_value('reviewedOn', get_date(''.join(reviewed_on)))
+        total_chapter_count = left_sel.xpath('.//span[contains(@title, "Kapitel")]/..').css('span.semibold::text').get()
+        if total_chapter_count:
+            left.add_value('totalChapterCount', total_chapter_count)
+        if total_review_count:
+            left.add_value('totalReviewCount', total_review_count)
 
         yield loader.load_item()
-        if self.db['chapters'].find_one({'url': response.url}) is None:
-            yield from self.parse_chapter(response, response.url)
+        yield from self.parse_chapter(response, response.url)
 
     def parse_chapter(self, response, story_url):
         """Parses chapters and following."""

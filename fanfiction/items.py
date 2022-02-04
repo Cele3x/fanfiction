@@ -91,6 +91,8 @@ class Story(Item):
     authorUrl = Field(output_processor=TakeFirst())
     characters = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     ageVerification = Field(output_processor=TakeFirst())
+    totalChapterCount = Field(output_processor=TakeFirst())
+    totalReviewCount = Field(output_processor=TakeFirst())
 
 
 class Chapter(Item):

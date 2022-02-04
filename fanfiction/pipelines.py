@@ -131,6 +131,11 @@ class FanfictionPipeline:
                 item['authorId'] = self.process_user(User({'url': item['authorUrl']}), True)
             del item['authorUrl']
 
+        if 'totalReviewCount' in item:
+            item['totalReviewCount'] = int(item['totalReviewCount'])
+        if 'totalChapterCount' in item:
+            item['totalChapterCount'] = int(item['totalChapterCount'])
+
         # exclude item keys that are processed later
         excluded_keys = ['fandoms', 'topics', 'characters']
         story_item = {k: item[k] for k in set(list(item.keys())) - set(excluded_keys)}
@@ -151,6 +156,8 @@ class FanfictionPipeline:
             else:  # create new story
                 story_item['createdAt'] = datetime.utcnow()
                 story_item['updatedAt'] = datetime.utcnow()
+                story_item['currentChapterCount'] = 0
+                story_item['currentReviewCount'] = 0
                 story_id = self.db['stories'].insert_one(story_item).inserted_id
         else:
             return None
@@ -231,6 +238,9 @@ class FanfictionPipeline:
             else:  # create new chapter
                 item['createdAt'] = datetime.utcnow()
                 item['updatedAt'] = datetime.utcnow()
+                # set current chapter count
+                current_chapter_count = self.db['chapters'].count_documents({'storyId': item['storyId']})
+                self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1}})
                 return self.db['chapters'].insert_one(item).inserted_id
         return None
 
@@ -318,6 +328,16 @@ class FanfictionPipeline:
         else:
             return None
 
+        # get story document except for reply reviews
+        story = None
+        if item['parentId'] is None:
+            if item['reviewableType'] == 'Chapter':
+                chapter = self.db['chapters'].find_one({'_id': item['reviewableId']})
+                if chapter:
+                    story = self.db['stories'].find_one({'_id': chapter['storyId']})
+            elif item['reviewableType'] == 'Story':
+                story = self.db['stories'].find_one({'_id': item['reviewableId']})
+
         if 'reviewedAt' in item:
             # check if review already exists
             if item['userId']:
@@ -330,6 +350,10 @@ class FanfictionPipeline:
                 self.db['reviews'].update_one({'_id': review['_id']}, {'$set': updated_review})
                 return review['_id']
             else:
+                if story:
+                    if 'currentReviewCount' not in story:
+                        story['currentReviewCount'] = 0
+                    self.db['stories'].update_one({'_id': story['_id']}, {'$set': {'currentReviewCount': story['currentReviewCount'] + 1}})
                 item['createdAt'] = datetime.utcnow()
                 item['updatedAt'] = datetime.utcnow()
                 return self.db['reviews'].insert_one(item).inserted_id
