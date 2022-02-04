@@ -336,7 +336,7 @@ class FanfictionPipeline:
         if item['parentId'] is None:
             if item['reviewableType'] == 'Chapter':
                 chapter = self.db['chapters'].find_one({'_id': item['reviewableId']})
-                if chapter:
+                if chapter and 'storyId' in chapter:
                     story = self.db['stories'].find_one({'_id': chapter['storyId']})
             elif item['reviewableType'] == 'Story':
                 story = self.db['stories'].find_one({'_id': item['reviewableId']})
