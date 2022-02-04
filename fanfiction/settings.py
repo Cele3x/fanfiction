@@ -7,8 +7,13 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-MONGO_URI = 'mongodb://localhost:27017'
-MONGO_DB = 'fanFictionDB'
+import urllib.parse
+
+username = urllib.parse.quote_plus('user')
+password = urllib.parse.quote_plus('pw')
+
+MONGO_URI = 'mongodb://%s:%s@127.0.0.1:27017' % (username, password)
+MONGO_DB = 'FanfictionDB'
 
 BOT_NAME = 'fanfiction'
 
