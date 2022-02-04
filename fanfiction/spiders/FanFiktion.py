@@ -115,7 +115,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
             left.add_value('status', 'paused')
         elif left_sel.xpath('.//span[contains(@title, "Abgebrochen")]'):
             left.add_value('status', 'cancelled')
-        left.add_xpath('likes', '//span[contains(@title, "Empfehlungen")]/../text()')
+        left.add_xpath('likes', './/span[contains(@title, "Empfehlungen")]/../text()')
         left.add_css('characters', 'span.badge-character')
         left.add_value('authorUrl', user_url)
         left.add_value('url', response.url)
@@ -167,10 +167,10 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
         bio_table = loader.nested_css('div.userprofile-bio-table')
         bio_table_sel = response.css('div.userprofile-bio-table')
-        bio_table.add_xpath('firstName', '//div[contains(text(), "Vorname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        bio_table.add_xpath('lastName', '//div[contains(text(), "Nachname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        bio_table.add_xpath('locatedAt', '//div[contains(text(), "Wohnort")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        bio_table.add_xpath('country', '//div[contains(text(), "Land")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('firstName', './/div[contains(text(), "Vorname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('lastName', './/div[contains(text(), "Nachname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('locatedAt', './/div[contains(text(), "Wohnort")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('country', './/div[contains(text(), "Land")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
         gender = bio_table_sel.xpath('.//div[contains(text(), "Geschlecht")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()').get()
         if gender == 'männlich':
             bio_table.add_value('gender', 'male')
@@ -178,7 +178,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
             bio_table.add_value('gender', 'female')
         elif gender == 'divers':
             bio_table.add_value('gender', 'other')
-        bio_table.add_xpath('age', '//div[contains(text(), "Alter")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('age', './/div[contains(text(), "Alter")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
 
         story_related = loader.nested_css('div#ffcbox-stories')
         if response.css('div#ffcbox-stories-layer-aboutme div.status-message').xpath('.//div[contains(text(), "Dieser Benutzer hat keine Informationen über sich veröffentlicht.")]'):
