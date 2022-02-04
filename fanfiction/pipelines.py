@@ -8,7 +8,7 @@ from typing import Union
 from datetime import datetime
 from itemadapter import ItemAdapter
 from fanfiction.items import User, Story, Chapter, Review
-from fanfiction.utilities import merge_dict
+from fanfiction.utilities import merge_dict, str_to_int
 
 
 class FanfictionPipeline:
@@ -132,20 +132,20 @@ class FanfictionPipeline:
             del item['authorUrl']
 
         if 'totalReviewCount' in item:
-            item['totalReviewCount'] = int(item['totalReviewCount'])
+            item['totalReviewCount'] = str_to_int(item['totalReviewCount'])
         if 'totalChapterCount' in item:
-            item['totalChapterCount'] = int(item['totalChapterCount'])
+            item['totalChapterCount'] = str_to_int(item['totalChapterCount'])
 
         # exclude item keys that are processed later
         excluded_keys = ['fandoms', 'topics', 'characters']
         story_item = {k: item[k] for k in set(list(item.keys())) - set(excluded_keys)}
         if 'url' in story_item:
             if 'likes' in story_item and story_item['likes']:
-                story_item['likes'] = int(story_item['likes'])
+                story_item['likes'] = str_to_int(story_item['likes'])
             if 'follows' in story_item and story_item['follows']:
-                story_item['follows'] = int(story_item['follows'])
+                story_item['follows'] = str_to_int(story_item['follows'])
             if 'hits' in story_item and story_item['hits']:
-                story_item['hits'] = int(story_item['hits'])
+                story_item['hits'] = str_to_int(story_item['hits'])
             # check if story already exists
             story = self.db['stories'].find_one({'url': story_item['url']})
             if story:  # merge and update story
@@ -227,7 +227,7 @@ class FanfictionPipeline:
 
         if 'url' in item:
             if 'number' in item and item['number']:
-                item['number'] = int(item['number'])
+                item['number'] = str_to_int(item['number'])
             # check if chapter already exists
             chapter = self.db['chapters'].find_one({'url': item['url']})
             if chapter:  # merge and update chapter
@@ -261,6 +261,9 @@ class FanfictionPipeline:
             if source:
                 item['sourceId'] = source['_id']
             del item['source']
+
+        if 'age' in item:
+            item['age'] = str_to_int(item['age'])
 
         if 'url' in item:
             # check if user already exists

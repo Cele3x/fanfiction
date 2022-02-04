@@ -14,6 +14,15 @@ def merge_dict(dict_old: dict, dict_new: dict) -> dict:
     return result
 
 
+# try to convert string to integer
+def str_to_int(string_value: str) -> Union[int, str]:
+    try:
+        return int(string_value)
+    except ValueError:
+        print('String could not be converted to integer: ' + string_value)
+        return string_value
+
+
 # format datetime from string
 def get_datetime(datetime_string: str) -> Union[datetime, str]:
     try:
