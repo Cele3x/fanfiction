@@ -1,6 +1,5 @@
 from settings import MONGO_URI, MONGO_DB
 from pymongo import MongoClient
-from datetime import datetime
 
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
@@ -100,12 +99,26 @@ pairings = [
 ]
 db['pairings'].insert_many(pairings)
 
-# FANDOMS
-# db['fandoms'].drop()
-# fandoms = [
-#     {'genreId': None, 'name1': 'Harry Potter', 'name2': None, 'name3': None},
-# ]
-# db['fandoms'].insert_many(fandoms)
+db['chapters'].create_index({'url': 1})
+db['chapters'].create_index({'storyId': 1})
+db['characters'].create_index({'fandomId': 1})
+db['reviews'].create_index({'parentId': 1})
+db['reviews'].create_index({'reviewableId': 1, 'reviewableType': 1})
+db['reviews'].create_index({'userId': 1})
+db['stories'].create_index({'categoryId': 1})
+db['stories'].create_index({'genreId': 1})
+db['stories'].create_index({'pairingId': 1})
+db['stories'].create_index({'ratingId': 1})
+db['stories'].create_index({'url': 1})
+db['stories'].create_index({'ageVerification': 1})
+db['stories'].create_index({'isPreliminary': 1})
+db['stories'].create_index({'authorId': 1})
+db['stories'].create_index({'sourceId': 1})
+db['story_characters'].create_index({'characterId': 1, 'storyId': 1})
+db['story_fandoms'].create_index({'fandomId': 1, 'storyId': 1})
+db['story_topics'].create_index({'topicId': 1, 'storyId': 1})
+db['users'].create_index({'url': 1})
+db['users'].create_index({'sourceId': 1})
 
 client.close()
 
