@@ -149,13 +149,13 @@ class FanfictionPipeline:
             # check if story already exists
             story = self.db['stories'].find_one({'url': story_item['url']})
             if story:  # merge and update story
-                story_item['updatedAt'] = datetime.utcnow()
+                story_item['updatedAt'] = datetime.now()
                 updated_story = merge_dict(story, story_item)
                 self.db['stories'].update_one({'_id': story['_id']}, {'$set': updated_story})
                 story_id = story['_id']
             else:  # create new story
-                story_item['createdAt'] = datetime.utcnow()
-                story_item['updatedAt'] = datetime.utcnow()
+                story_item['createdAt'] = datetime.now()
+                story_item['updatedAt'] = datetime.now()
                 story_item['currentChapterCount'] = 0
                 story_item['currentReviewCount'] = 0
                 story_id = self.db['stories'].insert_one(story_item).inserted_id
@@ -170,11 +170,11 @@ class FanfictionPipeline:
                 if fandom:
                     fandom_id = fandom['_id']
                 else:
-                    fandom_id = self.db['fandoms'].insert_one({'name1': f, 'name2': None, 'name3': None, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()}).inserted_id
+                    fandom_id = self.db['fandoms'].insert_one({'name1': f, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
                 # check if fandom already exists for story
                 story_fandom = self.db['story_fandoms'].find_one({'storyId': story_id, 'fandomId': fandom_id})
                 if story_fandom is None:
-                    self.db['story_fandoms'].insert_one({'storyId': story_id, 'fandomId': fandom_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
+                    self.db['story_fandoms'].insert_one({'storyId': story_id, 'fandomId': fandom_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
             del item['fandoms']
 
         # set topics for story
@@ -188,7 +188,7 @@ class FanfictionPipeline:
                 # check if topic already exists for story
                 story_topic = self.db['story_topics'].find_one({'storyId': story_id, 'topicId': topic_id})
                 if story_topic is None:
-                    self.db['story_topics'].insert_one({'storyId': story_id, 'topicId': topic_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
+                    self.db['story_topics'].insert_one({'storyId': story_id, 'topicId': topic_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
             del item['topics']
 
         # set characters for story
@@ -202,7 +202,7 @@ class FanfictionPipeline:
                 # check if character already exists for story
                 story_characters = self.db['story_characters'].find_one({'storyId': story_id, 'characterId': character_id})
                 if story_characters is None:
-                    self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.utcnow(), 'updatedAt': datetime.utcnow()})
+                    self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
             del item['characters']
         return story_id
 
@@ -231,13 +231,13 @@ class FanfictionPipeline:
             # check if chapter already exists
             chapter = self.db['chapters'].find_one({'url': item['url']})
             if chapter:  # merge and update chapter
-                item['updatedAt'] = datetime.utcnow()
+                item['updatedAt'] = datetime.now()
                 updated_chapter = merge_dict(chapter, item)
                 self.db['chapters'].update_one({'_id': chapter['_id']}, {'$set': updated_chapter})
                 return chapter['_id']
             else:  # create new chapter
-                item['createdAt'] = datetime.utcnow()
-                item['updatedAt'] = datetime.utcnow()
+                item['createdAt'] = datetime.now()
+                item['updatedAt'] = datetime.now()
                 # set current chapter count
                 current_chapter_count = self.db['chapters'].count_documents({'storyId': item['storyId']})
                 self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1}})
@@ -266,13 +266,13 @@ class FanfictionPipeline:
             # check if user already exists
             user = self.db['users'].find_one({'url': item['url']})
             if user:
-                item['updatedAt'] = datetime.utcnow()
+                item['updatedAt'] = datetime.now()
                 updated_user = merge_dict(user, item)
                 self.db['users'].update_one({'_id': user['_id']}, {'$set': updated_user})
                 return user['_id']
             else:
-                item['createdAt'] = datetime.utcnow()
-                item['updatedAt'] = datetime.utcnow()
+                item['createdAt'] = datetime.now()
+                item['updatedAt'] = datetime.now()
                 return self.db['users'].insert_one(item).inserted_id
         return None
 
@@ -345,7 +345,7 @@ class FanfictionPipeline:
             else:  # anonymous user
                 review = self.db['reviews'].find_one({'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
             if review:
-                item['updatedAt'] = datetime.utcnow()
+                item['updatedAt'] = datetime.now()
                 updated_review = merge_dict(review, item)
                 self.db['reviews'].update_one({'_id': review['_id']}, {'$set': updated_review})
                 return review['_id']
@@ -354,8 +354,8 @@ class FanfictionPipeline:
                     if 'currentReviewCount' not in story:
                         story['currentReviewCount'] = 0
                     self.db['stories'].update_one({'_id': story['_id']}, {'$set': {'currentReviewCount': story['currentReviewCount'] + 1}})
-                item['createdAt'] = datetime.utcnow()
-                item['updatedAt'] = datetime.utcnow()
+                item['createdAt'] = datetime.now()
+                item['updatedAt'] = datetime.now()
                 return self.db['reviews'].insert_one(item).inserted_id
         else:
             return None
