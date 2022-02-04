@@ -69,10 +69,10 @@ class FanfiktionSpider(CrawlSpider, ABC):
                 yield Request(user_url, callback=self.parse_user)
             story = self.db['stories'].find_one({'url': story_url})
             review = self.db['reviews'].find_one({'url': reviews_url})
-            has_missing_reviews = 'currentReviewCount' not in story or 'totalReviewCount' not in story or str_to_int(story['totalReviewCount']) == 0 or str_to_int(story['currentReviewCount']) < str_to_int(story['totalReviewCount'])
+            has_missing_reviews = story and ('currentReviewCount' not in story or 'totalReviewCount' not in story or str_to_int(story['totalReviewCount']) == 0 or str_to_int(story['currentReviewCount']) < str_to_int(story['totalReviewCount']))
             if review is None or has_missing_reviews:
                 yield Request(reviews_url, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
-            has_missing_chapters = 'currentChapterCount' not in story or 'totalChapterCount' not in story or str_to_int(story['totalChapterCount']) == 0 or str_to_int(story['currentChapterCount']) < str_to_int(story['totalChapterCount'])
+            has_missing_chapters = story and ('currentChapterCount' not in story or 'totalChapterCount' not in story or str_to_int(story['totalChapterCount']) == 0 or str_to_int(story['currentChapterCount']) < str_to_int(story['totalChapterCount']))
             if story is None or has_missing_chapters:
                 yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url, total_review_count=total_review_count))
 
