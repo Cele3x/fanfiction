@@ -22,7 +22,7 @@ genres = [
     {'name1': 'Kino- & TV-Filme', 'name2': None, 'name3': None},
     {'name1': 'Musicals', 'name2': None, 'name3': None},
     {'name1': 'Prominente', 'name2': None, 'name3': None},
-    {'name1': 'Serien & Prodcasts', 'name2': None, 'name3': None},
+    {'name1': 'Serien & Podcasts', 'name2': None, 'name3': None},
     {'name1': 'Tabletop- & Rollenspiele', 'name2': None, 'name3': None},
 ]
 db['genres'].insert_many(genres)
