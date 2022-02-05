@@ -7,13 +7,24 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 import urllib.parse
 
-username = urllib.parse.quote_plus('user')
-password = urllib.parse.quote_plus('pw')
+# load environment variables
+dotenv_path = join(dirname(dirname(__file__)), '.env')
+load_dotenv(dotenv_path)
 
-MONGO_URI = 'mongodb://%s:%s@127.0.0.1:27017' % (username, password)
-MONGO_DB = 'FanfictionDB'
+# set environment variables and quote values when necessary
+MONGO_USER = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
+MONGO_PW = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
+MONGO_HOST = os.environ.get('MONGO_HOST')
+MONGO_PORT = os.environ.get('MONGO_PORT')
+MONGO_DB = os.environ.get('MONGO_DB')
+
+# MongoDB's connection string
+MONGO_URI = 'mongodb://%s:%s@%s:%s' % (MONGO_USER, MONGO_PW, MONGO_HOST, MONGO_PORT)
 
 BOT_NAME = 'fanfiction'
 

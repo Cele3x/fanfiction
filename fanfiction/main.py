@@ -1,6 +1,6 @@
 from scrapy import cmdline
-from settings import MONGO_URI, MONGO_DB
-from pymongo import MongoClient
+# from settings import MONGO_URI, MONGO_DB
+# from pymongo import MongoClient
 
 # connect to MongoDB
 # client = MongoClient(MONGO_URI)
