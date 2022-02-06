@@ -239,8 +239,9 @@ class FanfictionPipeline:
                 item['createdAt'] = datetime.now()
                 item['updatedAt'] = datetime.now()
                 # set current chapter count
-                current_chapter_count = self.db['chapters'].count_documents({'storyId': item['storyId']})
-                self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1}})
+                if 'storyId' in item:
+                    current_chapter_count = self.db['chapters'].count_documents({'storyId': item['storyId']})
+                    self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1}})
                 return self.db['chapters'].insert_one(item).inserted_id
         return None
 
