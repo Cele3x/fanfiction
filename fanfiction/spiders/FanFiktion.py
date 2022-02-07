@@ -35,10 +35,10 @@ class FanfiktionSpider(CrawlSpider, ABC):
     download_delay = 1
     allowed_domains = ['fanfiktion.de']
 
-    start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
+    # start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
     # start_urls = ['https://www.fanfiktion.de/Musicals/c/110000000']
     # start_urls = ['https://www.fanfiktion.de/Crossover/c/107000000']
-    # start_urls = ['https://www.fanfiktion.de/Cartoons-Comics/c/105000000']
+    start_urls = ['https://www.fanfiktion.de/Cartoons-Comics/c/105000000']
     # start_urls = ['https://www.fanfiktion.de/Computerspiele/c/106000000']
     # start_urls = ['https://www.fanfiktion.de/Kino-TV-Filme/c/104000000']
     # start_urls = ['https://www.fanfiktion.de/Serien-Podcasts/c/101000000']
@@ -167,18 +167,18 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
         bio_table = loader.nested_css('div.userprofile-bio-table')
         bio_table_sel = response.css('div.userprofile-bio-table')
-        bio_table.add_xpath('firstName', './/div[contains(text(), "Vorname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        bio_table.add_xpath('lastName', './/div[contains(text(), "Nachname")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        bio_table.add_xpath('locatedAt', './/div[contains(text(), "Wohnort")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        bio_table.add_xpath('country', './/div[contains(text(), "Land")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
-        gender = bio_table_sel.xpath('.//div[contains(text(), "Geschlecht")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()').get()
+        bio_table.add_xpath('firstName', './/div[contains(text(), "Vorname:")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('lastName', './/div[contains(text(), "Nachname:")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('locatedAt', './/div[contains(text(), "Wohnort:")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('country', './/div[contains(text(), "Land:")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        gender = bio_table_sel.xpath('.//div[contains(text(), "Geschlecht:")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()').get()
         if gender == 'männlich':
             bio_table.add_value('gender', 'male')
         elif gender == 'weiblich':
             bio_table.add_value('gender', 'female')
         elif gender == 'divers':
             bio_table.add_value('gender', 'other')
-        bio_table.add_xpath('age', './/div[contains(text(), "Alter")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
+        bio_table.add_xpath('age', './/div[contains(text(), "Alter:")]/../descendant-or-self::*/div[count(preceding-sibling::*) >= 1]/text()')
 
         story_related = loader.nested_css('div#ffcbox-stories')
         if response.css('div#ffcbox-stories-layer-aboutme div.status-message').xpath('.//div[contains(text(), "Dieser Benutzer hat keine Informationen über sich veröffentlicht.")]'):
