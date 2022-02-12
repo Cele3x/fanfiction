@@ -35,13 +35,17 @@ class FanfiktionSpider(CrawlSpider, ABC):
     download_delay = 1
     allowed_domains = ['fanfiktion.de']
 
+    custom_settings = {
+        'JOBDIR': 'crawls/FanFiktion-Serien_Podcasts',
+    }
+
     # start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
     # start_urls = ['https://www.fanfiktion.de/Musicals/c/110000000']
     # start_urls = ['https://www.fanfiktion.de/Crossover/c/107000000']
     # start_urls = ['https://www.fanfiktion.de/Cartoons-Comics/c/105000000']
     # start_urls = ['https://www.fanfiktion.de/Computerspiele/c/106000000']
-    start_urls = ['https://www.fanfiktion.de/Kino-TV-Filme/c/104000000']
-    # start_urls = ['https://www.fanfiktion.de/Serien-Podcasts/c/101000000']
+    # start_urls = ['https://www.fanfiktion.de/Kino-TV-Filme/c/104000000']
+    start_urls = ['https://www.fanfiktion.de/Serien-Podcasts/c/101000000']
     # start_urls = ['https://www.fanfiktion.de/Buecher/c/103000000']
     # start_urls = ['https://www.fanfiktion.de/Anime-Manga/c/102000000']
 
