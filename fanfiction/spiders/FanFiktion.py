@@ -32,7 +32,7 @@ def find_story_definitions(text: str) -> list:
 
 class FanfiktionSpider(CrawlSpider, ABC):
     name = 'FanFiktion'
-    download_delay = 1
+    download_delay = 0.5
     allowed_domains = ['fanfiktion.de']
 
     custom_settings = {
