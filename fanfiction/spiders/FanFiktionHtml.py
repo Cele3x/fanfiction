@@ -42,6 +42,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist'), callback='parse_storylist', follow=True),
     )
 
+    # object constants for spider
     story = {
         'type': 'story',
         'csv_filepath': 'pages/stories/story_urls.csv',
@@ -65,7 +66,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
     }
 
     def __init__(self, *a, **kw):
-        super().__init__(a, kw)
+        super(FanfiktionHtmlSpider, self).__init__(*a, **kw)
         self.state = getattr(self, 'state', {})
 
     @classmethod
@@ -89,6 +90,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
     def handle_spider_idle(self, spider):
         spider.logger.info('Spider idle: %s', spider.name)
 
+        # process open urls
         while self.state.get('open_story_urls', set()):
             url = self.state.get('open_story_urls').pop()
             print('Crawling story: ', url)
@@ -110,15 +112,12 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         spider.logger.info('Spider closed: %s', spider.name)
 
         # set stats
-        self.crawler.stats.set_value('failed_user_urls', len(self.state.get('failed_user_urls', set())))
-        self.crawler.stats.set_value('failed_story_urls', len(self.state.get('failed_story_urls', set())))
-        self.crawler.stats.set_value('failed_reviews_urls', len(self.state.get('failed_reviews_urls', set())))
+        state_attrs = ['open_story_urls', 'open_user_urls', 'open_reviews_urls', 'failed_story_urls', 'failed_user_urls', 'failed_reviews_urls']
+        for state_attr in state_attrs:
+            self.crawler.stats.set_value(state_attr, len(self.state.get(state_attr, set())))
         self.crawler.stats.set_value('crawled_users', self.state.get('user_items'), 0)
         self.crawler.stats.set_value('crawled_stories', self.state.get('story_items'), 0)
         self.crawler.stats.set_value('crawled_reviews', self.state.get('reviews_items'), 0)
-        self.crawler.stats.set_value('open_user_urls', len(self.state.get('open_user_urls', set())))
-        self.crawler.stats.set_value('open_story_urls', len(self.state.get('open_story_urls', set())))
-        self.crawler.stats.set_value('open_reviews_urls', len(self.state.get('open_reviews_urls', set())))
 
         # archive files
         # archive_files(self.story['html_path'], with_csv=True)
