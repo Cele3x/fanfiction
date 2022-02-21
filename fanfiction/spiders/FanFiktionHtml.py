@@ -64,6 +64,10 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         'state_count_name': 'reviews_items'
     }
 
+    def __init__(self, *a, **kw):
+        super().__init__(a, kw)
+        self.state = getattr(self, 'state', {})
+
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(FanfiktionHtmlSpider, cls).from_crawler(crawler, *args, **kwargs)
@@ -74,18 +78,12 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
 
     def handle_spider_opened(self, spider):
         spider.logger.info('Spider opened: %s', spider.name)
-        if 'open_story_urls' not in self.state:
-            self.state['open_story_urls'] = set()
-        if 'open_user_urls' not in self.state:
-            self.state['open_user_urls'] = set()
-        if 'open_reviews_urls' not in self.state:
-            self.state['open_reviews_urls'] = set()
-        if 'failed_story_urls' not in self.state:
-            self.state['failed_story_urls'] = set()
-        if 'failed_user_urls' not in self.state:
-            self.state['failed_user_urls'] = set()
-        if 'failed_reviews_urls' not in self.state:
-            self.state['failed_reviews_urls'] = set()
+
+        # get or initialize state attributes
+        state_attrs = ['open_story_urls', 'open_user_urls', 'open_reviews_urls', 'failed_story_urls', 'failed_user_urls', 'failed_reviews_urls']
+        for state_attr in state_attrs:
+            self.state[state_attr] = getattr(self.state, state_attr, set())
+
         self.print_stats()
 
     def handle_spider_idle(self, spider):
@@ -123,9 +121,9 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.crawler.stats.set_value('open_reviews_urls', len(self.state.get('open_reviews_urls', set())))
 
         # archive files
-        archive_files(self.story['html_path'], with_csv=True)
-        archive_files(self.user['html_path'], with_csv=True)
-        archive_files(self.reviews['html_path'], with_csv=True)
+        # archive_files(self.story['html_path'], with_csv=True)
+        # archive_files(self.user['html_path'], with_csv=True)
+        # archive_files(self.reviews['html_path'], with_csv=True)
 
     def print_stats(self):
         self.logger.info('Stories: %d [%d]', self.state.get('story_items', 0), len(self.state.get('open_story_urls', set())))
@@ -171,7 +169,8 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['item_count'] % 100 == 0:  # every 100 items
             self.print_stats()
-            archive_files(item['html_path'], 100)
+        if self.state['item_count'] % 100 == 0:  # every 1000 items
+            archive_files(item['html_path'])
 
         if item['type'] == 'story':
             self.state['open_story_urls'].discard(response.url)
