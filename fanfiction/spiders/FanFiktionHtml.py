@@ -79,6 +79,20 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
             spider.logger.info('Crawling reviews: %s', url)
             self.crawler.engine.crawl(Request(url, callback=self.save_reviews), spider)
 
+        # process failed urls
+        while self.state.get('failed_story_urls', set()):
+            url = self.state.get('failed_story_urls').pop()
+            spider.logger.info('Crawling story: %s', url)
+            self.crawler.engine.crawl(Request(url, callback=self.save_story), spider)
+        while self.state.get('failed_user_urls', set()):
+            url = self.state.get('failed_user_urls').pop()
+            spider.logger.info('Crawling user: %s', url)
+            self.crawler.engine.crawl(Request(url, callback=self.save_user), spider)
+        while self.state.get('failed_reviews_urls', set()):
+            url = self.state.get('failed_reviews_urls').pop()
+            spider.logger.info('Crawling reviews: %s', url)
+            self.crawler.engine.crawl(Request(url, callback=self.save_reviews), spider)
+
     def handle_spider_closed(self, spider):
         spider.logger.info('Spider closed: %s', spider.name)
 
@@ -90,10 +104,10 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.crawler.stats.set_value('crawled_users', self.state.get('user_items'), 0)
         self.crawler.stats.set_value('crawled_reviews', self.state.get('reviews_items'), 0)
 
-        # archive files
-        archive_files('pages/stories/')
-        archive_files('pages/users/')
-        archive_files('pages/reviews/')
+        # # archive files
+        # archive_files('pages/stories/')
+        # archive_files('pages/users/')
+        # archive_files('pages/reviews/')
 
     def read_urls_into_state(self):
         self.logger.info('Reading done story urls from CSV file into state...')
@@ -137,7 +151,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
                 yield response.follow(response.urljoin(reviews_url), callback=self.save_reviews)
 
     def save_story(self, response: any):
-        # check for failed requests
+        # check for failed request
         if response.status == 403 or response.status == 404:
             self.crawler.stats.inc_value('failed_url_count')
             self.state['failed_story_urls'].add(response.url)
