@@ -114,7 +114,21 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
     'scrapy_fake_useragent.middleware.RetryUserAgentMiddleware': 401,
+    # 'rotating_free_proxies.middlewares.RotatingProxyMiddleware': 610,
+    # 'rotating_free_proxies.middlewares.BanDetectionMiddleware': 620,
+    # 'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+    # 'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
 }
+
+# ROTATING_PROXY_LIST = [
+#     '88.198.24.108:1080',
+#     '88.198.50.103:1080',
+#     '194.163.128.225:3128',
+# ]
+# ROTATING_PROXY_LIST_PATH = 'proxies.txt'  # Path that this library uses to store list of proxies
+# NUMBER_OF_PROXIES_TO_FETCH = 6  # Controls how many proxies to use
+
+# Set fake UserAgent providers and default one
 FAKEUSERAGENT_PROVIDERS = [
     'scrapy_fake_useragent.providers.FakeUserAgentProvider',  # this is the first provider we'll try
     'scrapy_fake_useragent.providers.FakerProvider',  # if FakeUserAgentProvider fails, we'll use faker to generate a user-agent string for us
