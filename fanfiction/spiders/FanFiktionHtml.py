@@ -9,18 +9,20 @@ from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
+from ..settings import ARCHIVE_PATH_STORIES, ARCHIVE_PATH_USERS, ARCHIVE_PATH_REVIEWS
 
 
-def archive_files(filepath: str, outpath: str, min_size: int = 1, with_csv: bool = False) -> None:
+def archive_files(filepath: str, outpath: str, typename: str, min_size: int = 1) -> None:
     try:
-        filelist = [os.path.join(filepath, file) for file in os.listdir(filepath) if file.endswith('.html') or (with_csv and file.endswith('.csv'))]
+        filelist = [os.path.join(filepath, file) for file in os.listdir(filepath) if file.endswith('.html')]
         if len(filelist) > min_size:
-            archive_name = outpath + datetime.now().strftime("%Y%m%d%H%M%S%f") + '_archive.tar.gz'
-            with tarfile.open(archive_name, "w:gz") as tar:
+            archive_name = typename + '_' + datetime.now().strftime("%Y%m%d%H%M%S%f") + '.tar.gz'
+            archive_path = os.path.join(outpath, archive_name)
+            with tarfile.open(archive_path, "w:gz") as tar:
                 for file in filelist:
                     tar.add(file, arcname=file.split('/')[-1])  # add to archive
                     os.remove(file)  # delete file
-            print('Archive: ', archive_name)
+            print('Archive: ', archive_path)
     except FileNotFoundError:
         print('Archive could not be created because path was not found: ', filepath)
 
@@ -35,6 +37,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
     }
 
     start_urls = ['https://www.fanfiktion.de/Buecher/c/103000000']
+    # start_urls = ['https://www.fanfiktion.de/Anime-Manga/c/102000000']
 
     rules = (
         Rule(LinkExtractor(allow=r'\/c\/', restrict_css='div.storylist'), callback='parse_storylist', follow=True),
@@ -106,9 +109,9 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.crawler.stats.set_value('crawled_reviews', self.state.get('reviews_items'), 0)
 
         # archive files
-        archive_files('pages/stories/', 'pages/stories/')
-        archive_files('pages/users/', 'pages/users/')
-        archive_files('pages/reviews/', 'pages/reviews/')
+        archive_files('pages/stories/', ARCHIVE_PATH_STORIES, 'stories')
+        archive_files('pages/users/', ARCHIVE_PATH_USERS, 'users')
+        archive_files('pages/reviews/', ARCHIVE_PATH_REVIEWS, 'reviews')
 
     def read_urls_into_state(self):
         self.logger.info('Reading done story urls from CSV file into state...')
@@ -179,7 +182,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['story_items'] % 1000 == 0:  # every 1000 items
             self.print_stats()
-            archive_files('pages/stories/')
+            archive_files('pages/stories/', ARCHIVE_PATH_STORIES, 'stories')
 
         # remove story url from open urls
         self.state['open_story_urls'].discard(response.url)
@@ -216,7 +219,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['user_items'] % 1000 == 0:  # every 1000 items
             self.print_stats()
-            archive_files('pages/users/')
+            archive_files('pages/users/', ARCHIVE_PATH_USERS, 'users')
 
         # remove user url from open urls
         self.state['open_user_urls'].discard(response.url)
@@ -250,7 +253,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['reviews_items'] % 1000 == 0:  # every 1000 items
             self.print_stats()
-            archive_files('pages/reviews/')
+            archive_files('pages/reviews/', ARCHIVE_PATH_REVIEWS, 'reviews')
 
         # remove reviews url from open urls
         self.state['open_reviews_urls'].discard(response.url)
