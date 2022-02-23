@@ -66,7 +66,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.read_urls_into_state()
         self.print_stats()
 
-        if not os.path.isdir(ARCHIVE_PATH_STORIES) or os.path.isdir(ARCHIVE_PATH_USERS) or os.path.isdir(ARCHIVE_PATH_REVIEWS):
+        if not os.path.isdir(ARCHIVE_PATH_STORIES) or not os.path.isdir(ARCHIVE_PATH_USERS) or not os.path.isdir(ARCHIVE_PATH_REVIEWS):
             spider.logger.info('Specified archive paths from .env-file are no valid directories')
             raise CloseSpider
 
