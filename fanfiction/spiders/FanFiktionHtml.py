@@ -5,6 +5,7 @@ import os.path
 from abc import ABC
 from datetime import datetime
 from scrapy import signals
+from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
@@ -26,7 +27,7 @@ def archive_files(filepath: str, min_size: int = 1, with_csv: bool = False) -> N
 
 class FanfiktionHtmlSpider(CrawlSpider, ABC):
     name = 'FanFiktionHtml'
-    download_delay = 1
+    download_delay = 0.725
     allowed_domains = ['fanfiktion.de']
 
     custom_settings = {
@@ -155,7 +156,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         if response.status == 403 or response.status == 404:
             self.crawler.stats.inc_value('failed_url_count')
             self.state['failed_story_urls'].add(response.url)
-            return
+            raise CloseSpider
 
         # get last part of path while omitting preceeding 'https://www.fanfiktion.de/s/'
         parts = response.url.split('/')
@@ -177,6 +178,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['story_items'] = self.state.get('story_items', 0) + 1
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['story_items'] % 1000 == 0:  # every 1000 items
+            self.print_stats()
             archive_files('pages/stories/')
 
         # remove story url from open urls
@@ -193,7 +195,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         if response.status == 403 or response.status == 404:
             self.crawler.stats.inc_value('failed_url_count')
             self.state['failed_user_urls'].add(response.url)
-            return
+            raise CloseSpider
 
         # get last part of path while omitting preceeding 'https://www.fanfiktion.de/u/'
         parts = response.url.split('/')
@@ -213,6 +215,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['user_items'] = self.state.get('user_items', 0) + 1
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['user_items'] % 1000 == 0:  # every 1000 items
+            self.print_stats()
             archive_files('pages/users/')
 
         # remove user url from open urls
@@ -223,7 +226,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         if response.status == 403 or response.status == 404:
             self.crawler.stats.inc_value('failed_url_count')
             self.state['failed_reviews_urls'].add(response.url)
-            return
+            raise CloseSpider
 
         # get last part of path while omitting preceeding 'https://www.fanfiktion.de/r/s/'
         parts = response.url.split('/')
@@ -246,6 +249,7 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.state['reviews_items'] = self.state.get('reviews_items', 0) + 1
         self.state['item_count'] = self.state.get('item_count', 0) + 1
         if self.state['reviews_items'] % 1000 == 0:  # every 1000 items
+            self.print_stats()
             archive_files('pages/reviews/')
 
         # remove reviews url from open urls
