@@ -11,11 +11,11 @@ from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
 
-def archive_files(filepath: str, min_size: int = 1, with_csv: bool = False) -> None:
+def archive_files(filepath: str, outpath: str, min_size: int = 1, with_csv: bool = False) -> None:
     try:
         filelist = [os.path.join(filepath, file) for file in os.listdir(filepath) if file.endswith('.html') or (with_csv and file.endswith('.csv'))]
         if len(filelist) > min_size:
-            archive_name = filepath + datetime.now().strftime("%Y%m%d%H%M%S%f") + '_archive.tar.gz'
+            archive_name = outpath + datetime.now().strftime("%Y%m%d%H%M%S%f") + '_archive.tar.gz'
             with tarfile.open(archive_name, "w:gz") as tar:
                 for file in filelist:
                     tar.add(file, arcname=file.split('/')[-1])  # add to archive
@@ -105,10 +105,10 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         self.crawler.stats.set_value('crawled_users', self.state.get('user_items'), 0)
         self.crawler.stats.set_value('crawled_reviews', self.state.get('reviews_items'), 0)
 
-        # # archive files
-        # archive_files('pages/stories/')
-        # archive_files('pages/users/')
-        # archive_files('pages/reviews/')
+        # archive files
+        archive_files('pages/stories/', 'pages/stories/')
+        archive_files('pages/users/', 'pages/users/')
+        archive_files('pages/reviews/', 'pages/reviews/')
 
     def read_urls_into_state(self):
         self.logger.info('Reading done story urls from CSV file into state...')
