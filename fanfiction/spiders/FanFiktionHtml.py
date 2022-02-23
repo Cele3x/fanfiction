@@ -114,24 +114,24 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
         archive_files('pages/reviews/', ARCHIVE_PATH_REVIEWS, 'reviews')
 
     def read_urls_into_state(self):
-        self.logger.info('Reading done story urls from CSV file into state...')
-        with open('pages/stories.csv') as f:
-            reader = csv.reader(f, delimiter=',')
-            for row in reader:
-                self.state['done_story_urls'].add(row[1])
-        self.logger.info('Done')
-        self.logger.info('Reading done user urls from CSV file into state...')
-        with open('pages/users.csv') as f:
-            reader = csv.reader(f, delimiter=',')
-            for row in reader:
-                self.state['done_user_urls'].add(row[1])
-        self.logger.info('Done')
-        self.logger.info('Reading done reviews urls from CSV file into state...')
-        with open('pages/reviews.csv') as f:
-            reader = csv.reader(f, delimiter=',')
-            for row in reader:
-                self.state['done_reviews_urls'].add(row[1])
-        self.logger.info('Done')
+        story_csv = 'pages/stories.csv'
+        if os.path.isfile(story_csv):
+            with open(story_csv) as f:
+                reader = csv.reader(f, delimiter=',')
+                for row in reader:
+                    self.state['done_story_urls'].add(row[1])
+        user_csv = 'pages/users.csv'
+        if os.path.isfile(user_csv):
+            with open(user_csv) as f:
+                reader = csv.reader(f, delimiter=',')
+                for row in reader:
+                    self.state['done_user_urls'].add(row[1])
+        reviews_csv = 'pages/reviews.csv'
+        if os.path.isfile(reviews_csv):
+            with open(reviews_csv) as f:
+                reader = csv.reader(f, delimiter=',')
+                for row in reader:
+                    self.state['done_reviews_urls'].add(row[1])
 
     def print_stats(self):
         self.logger.info('Stories: %d [Done: %d, Open: %d]', self.state.get('story_items', 0), len(self.state.get('done_story_urls', set())), len(self.state.get('open_story_urls', set())))
