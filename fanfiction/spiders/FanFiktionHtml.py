@@ -58,6 +58,10 @@ class FanfiktionHtmlSpider(CrawlSpider, ABC):
     def handle_spider_opened(self, spider):
         spider.logger.info('Spider opened: %s', spider.name)
 
+        if not os.path.isdir(ARCHIVE_PATH_STORIES) or os.path.isdir(ARCHIVE_PATH_USERS) or os.path.isdir(ARCHIVE_PATH_REVIEWS):
+            spider.logger.info('Specified archive paths from .env-file are no valid directories')
+            raise CloseSpider
+
         # get or initialize state attributes
         state_attrs = ['done_story_urls', 'done_user_urls', 'done_reviews_urls', 'open_story_urls', 'open_user_urls', 'open_reviews_urls', 'failed_story_urls', 'failed_user_urls', 'failed_reviews_urls']
         for state_attr in state_attrs:
