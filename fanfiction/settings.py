@@ -21,6 +21,16 @@ ARCHIVE_PATH_STORIES = os.environ.get('ARCHIVE_PATH_STORIES')
 ARCHIVE_PATH_USERS = os.environ.get('ARCHIVE_PATH_USERS')
 ARCHIVE_PATH_REVIEWS = os.environ.get('ARCHIVE_PATH_REVIEWS')
 
+# environment variables for extracted html files
+EXTRACTED_STORIES_PATH = os.environ.get('EXTRACTED_STORIES_PATH')
+EXTRACTED_USERS_PATH = os.environ.get('EXTRACTED_USERS_PATH')
+EXTRACTED_REVIEWS_PATH = os.environ.get('EXTRACTED_REVIEWS_PATH')
+
+# environment variables for csv files
+CSV_STORIES_PATH = os.environ.get('CSV_STORIES_PATH')
+CSV_USERS_PATH = os.environ.get('CSV_USERS_PATH')
+CSV_REVIEWS_PATH = os.environ.get('CSV_REVIEWS_PATH')
+
 # environment variables for mongo db with quoting where necessary
 MONGO_USER = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
 MONGO_PW = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
