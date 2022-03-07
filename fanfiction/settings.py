@@ -16,10 +16,12 @@ import urllib.parse
 dotenv_path = join(dirname(dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
 
-# set environment variables and quote values when necessary
+# environment variables for archiving
 ARCHIVE_PATH_STORIES = os.environ.get('ARCHIVE_PATH_STORIES')
 ARCHIVE_PATH_USERS = os.environ.get('ARCHIVE_PATH_USERS')
 ARCHIVE_PATH_REVIEWS = os.environ.get('ARCHIVE_PATH_REVIEWS')
+
+# environment variables for mongo db with quoting where necessary
 MONGO_USER = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
 MONGO_PW = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
 MONGO_HOST = os.environ.get('MONGO_HOST')
