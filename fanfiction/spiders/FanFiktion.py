@@ -1,6 +1,10 @@
 import re
+
+from scrapy.exceptions import CloseSpider
+
 from fanfiction.settings import MONGO_URI, MONGO_DB
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from abc import ABC
 from fanfiction.utilities import get_datetime, get_date, str_to_int
 
@@ -32,11 +36,11 @@ def find_story_definitions(text: str) -> list:
 
 class FanfiktionSpider(CrawlSpider, ABC):
     name = 'FanFiktion'
-    download_delay = 1
+    download_delay = 0.725
     allowed_domains = ['fanfiktion.de']
 
     custom_settings = {
-        'JOBDIR': 'crawls/FanFiktion-Serien_Podcasts',
+        'JOBDIR': 'crawls/FanFiktion-Buecher',
     }
 
     # start_urls = ['https://www.fanfiktion.de/Tabletop-Rollenspiele/c/108000000']
@@ -45,8 +49,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
     # start_urls = ['https://www.fanfiktion.de/Cartoons-Comics/c/105000000']
     # start_urls = ['https://www.fanfiktion.de/Computerspiele/c/106000000']
     # start_urls = ['https://www.fanfiktion.de/Kino-TV-Filme/c/104000000']
-    start_urls = ['https://www.fanfiktion.de/Serien-Podcasts/c/101000000']
-    # start_urls = ['https://www.fanfiktion.de/Buecher/c/103000000']
+    # start_urls = ['https://www.fanfiktion.de/Serien-Podcasts/c/101000000']
+    start_urls = ['https://www.fanfiktion.de/Buecher/c/103000000']
     # start_urls = ['https://www.fanfiktion.de/Anime-Manga/c/102000000']
 
     rules = (
@@ -64,6 +68,9 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
     def parse_item(self, response):
         """Processes item by evaluating their type and passing it to the appropriate parser."""
+        if response.status != 200:
+            raise CloseSpider('Closing spider due to HTTP error')
+
         for item in response.css('div.storylist-item'):
             user_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/u/")]/@href').get())
             story_url = response.urljoin(item.xpath('.//a[starts-with(@href, "/s/")]/@href').get())
@@ -78,10 +85,17 @@ class FanfiktionSpider(CrawlSpider, ABC):
                 yield Request(reviews_url, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
             has_missing_chapters = story and ('currentChapterCount' not in story or 'totalChapterCount' not in story or str_to_int(story['totalChapterCount']) == 0 or str_to_int(story['currentChapterCount']) < str_to_int(story['totalChapterCount']))
             if story is None or has_missing_chapters:
-                yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url, total_review_count=total_review_count))
+                if has_missing_chapters:
+                    self.logger.info('Story with missing chapters: {}'.format(story))
+                yield Request(story_url, callback=self.parse_story, cb_kwargs=dict(user_url=user_url, total_review_count=total_review_count, story=story))
+            else:
+                self.logger.info('Story exists')
 
-    def parse_story(self, response, user_url, total_review_count):
+    def parse_story(self, response, user_url, total_review_count, story=None):
         """Parses story item."""
+        if response.status != 200:
+            raise CloseSpider('Closing spider due to HTTP error')
+
         loader = ItemLoader(item=Story(), selector=response)
 
         # mark stories with age verification
@@ -136,10 +150,13 @@ class FanfiktionSpider(CrawlSpider, ABC):
             left.add_value('totalReviewCount', total_review_count)
 
         yield loader.load_item()
-        yield from self.parse_chapter(response, response.url)
+        yield from self.parse_chapter(response, response.url, story, total_chapter_count)
 
-    def parse_chapter(self, response, story_url):
+    def parse_chapter(self, response, story_url, story=None, total_chapter_count='0'):
         """Parses chapters and following."""
+        if response.status != 200:
+            raise CloseSpider('Closing spider due to HTTP error')
+
         right_sel = response.css('div.story-right')
         loader = ItemLoader(item=Chapter(), selector=right_sel)
         loader.add_value('storyUrl', story_url)
@@ -156,12 +173,26 @@ class FanfiktionSpider(CrawlSpider, ABC):
             loader.add_value('title', chapter_title)
         yield loader.load_item()
 
-        next_chapter = right_sel.xpath('.//a[contains(@title, "nächstes Kapitel")]/@href').get()
-        if next_chapter:
-            yield response.follow(next_chapter, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url))
+        if not story:  # story is missing so far
+            next_chapter = right_sel.xpath('.//a[contains(@title, "nächstes Kapitel")]/@href').get()
+            if next_chapter:
+                yield response.follow(next_chapter, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url, story=story, total_chapter_count=total_chapter_count))
+        else:  # chapters are missing
+            for chapter_number in range(1, str_to_int(total_chapter_count)):
+                chapter = self.db['chapters'].find_one({'storyId': ObjectId(story['_id']), 'number': chapter_number, 'isPreliminary': False})
+                if not chapter:
+                    url_parts = response.url.split('/')
+                    url_parts[-2] = str(chapter_number)
+                    chapter_url = '/'.join(url_parts)
+                    self.logger.info("New chapter: {}".format(chapter_url))
+                    yield Request(chapter_url, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url, story=story, total_chapter_count=total_chapter_count))
+
 
     def parse_user(self, response):
         """Parses user item."""
+        if response.status != 200:
+            raise CloseSpider('Closing spider due to HTTP error')
+
         loader = ItemLoader(item=User(), selector=response)
 
         # general data
@@ -197,6 +228,9 @@ class FanfiktionSpider(CrawlSpider, ABC):
 
     def parse_reviews(self, response, story_url):
         """Parses review items."""
+        if response.status != 200:
+            raise CloseSpider('Closing spider due to HTTP error')
+
         for review in response.css('div.review'):
             loader = ItemLoader(item=Review(), selector=review)
             loader.add_value('url', response.url)
