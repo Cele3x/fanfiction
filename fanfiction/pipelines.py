@@ -458,23 +458,41 @@ class FanfictionHtmlPipeline:
                 item['genreId'] = self.db['genres'].insert_one({'name1': item['genre'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
             del item['genre']
 
-        # set rating
+        # set ratings
+        rating_ids = []
         if 'rating' in item:
-            rating = self.db['ratings'].find_one({'$or': [{'name1': item['rating']}, {'name2': item['rating']}, {'name3': item['rating']}]})
-            if rating:
-                item['ratingId'] = rating['_id']
+            if 'ratings' in item:
+                item['ratings'].append(item['rating'])
             else:
-                item['ratingId'] = self.db['ratings'].insert_one({'name1': item['rating'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
+                item['ratings'] = [item['rating']]
             del item['rating']
+        if 'ratings' in item:
+            for rating_item in item['ratings']:
+                rating = self.db['ratings'].find_one({'$or': [{'name1': rating_item}, {'name2': rating_item}, {'name3': rating_item}]})
+                if rating:
+                    rating_id = rating['_id']
+                else:
+                    rating_id = self.db['ratings'].insert_one({'name1': rating_item, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
+                rating_ids.append(rating_id)
+                del item['ratings']
 
-        # set pairing
+        # set pairings
+        pairing_ids = []
         if 'pairing' in item:
-            pairing = self.db['pairings'].find_one({'$or': [{'name1': item['pairing']}, {'name2': item['pairing']}, {'name3': item['pairing']}]})
-            if pairing:
-                item['pairingId'] = pairing['_id']
+            if 'pairings' in item:
+                item['pairings'].append(item['pairing'])
             else:
-                item['pairingId'] = self.db['pairings'].insert_one({'name1': item['pairing'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
+                item['pairings'] = [item['pairing']]
             del item['pairing']
+        if 'pairings' in item:
+            for pairing_item in item['pairings']:
+                pairing = self.db['pairings'].find_one({'$or': [{'name1': pairing_item}, {'name2': pairing_item}, {'name3': pairing_item}]})
+                if pairing:
+                    pairing_id = pairing['_id']
+                else:
+                    pairing_id = self.db['pairings'].insert_one({'name1': pairing_item, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
+                pairing_ids.append(pairing_id)
+                del item['pairings']
 
         # search for existing user and set authorId if found or create a rudimentary user
         if 'authorUrl' in item:
@@ -517,18 +535,25 @@ class FanfictionHtmlPipeline:
             return None
 
         # set fandoms for story
-        fandom_id = None
+        fandom_ids = []
+        if 'fandom' in item:
+            if 'fandoms' in item:
+                item['fandoms'].append(item['fandom'])
+            else:
+                item['fandoms'] = [item['fandom']]
+            del item['fandom']
         if 'fandoms' in item:
-            for f in item['fandoms'].split(', '):
-                fandom = self.db['fandoms'].find_one({'$or': [{'name1': f}, {'name2': f}, {'name3': f}]})
+            for fandom_item in item['fandoms']:
+                fandom = self.db['fandoms'].find_one({'$or': [{'name1': fandom_item}, {'name2': fandom_item}, {'name3': fandom_item}]})
                 if fandom:
                     fandom_id = fandom['_id']
                 else:
-                    fandom_id = self.db['fandoms'].insert_one({'name1': f, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
+                    fandom_id = self.db['fandoms'].insert_one({'name1': fandom_item, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
                 # check if fandom already exists for story
                 story_fandom = self.db['story_fandoms'].find_one({'storyId': story_id, 'fandomId': fandom_id})
                 if story_fandom is None:
                     self.db['story_fandoms'].insert_one({'storyId': story_id, 'fandomId': fandom_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
+                fandom_ids.append(fandom_id)
             del item['fandoms']
 
         # set topics for story
@@ -547,16 +572,17 @@ class FanfictionHtmlPipeline:
 
         # set characters for story
         if 'characters' in item:
-            for c in item['characters'].split(', '):
-                character = self.db['characters'].find_one({'fandomId': fandom_id, '$or': [{'name1': c}, {'name2': c}, {'name3': c}]})
-                if character:
-                    character_id = character['_id']
-                else:
-                    character_id = self.db['characters'].insert_one({'fandomId': fandom_id, 'name1': c, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
-                # check if character already exists for story
-                story_characters = self.db['story_characters'].find_one({'storyId': story_id, 'characterId': character_id})
-                if story_characters is None:
-                    self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
+            for character_item in item['characters']:
+                for fandom_id in fandom_ids:
+                    character = self.db['characters'].find_one({'fandomId': fandom_id, '$or': [{'name1': character_item}, {'name2': character_item}, {'name3': character_item}]})
+                    if character:
+                        character_id = character['_id']
+                    else:
+                        character_id = self.db['characters'].insert_one({'fandomId': fandom_id, 'name1': character_item, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
+                    # check if character already exists for story
+                    story_characters = self.db['story_characters'].find_one({'storyId': story_id, 'characterId': character_id})
+                    if story_characters is None:
+                        self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
             del item['characters']
 
         # set done

@@ -107,7 +107,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         story_path = response.css('#ffcbox-story-topic-1 a::text').getall()
         if story_path:
             loader.add_value('genre', story_path[1])
-            loader.add_value('fandoms', story_path[2:-1])  # TODO: maybe add specialized functions for e.g. 'FFs' or 'Prominente' items
+            loader.add_value('fandom', story_path[2:-1])  # TODO: maybe add specialized functions for e.g. 'FFs' or 'Prominente' items
 
         # left side data
         left = loader.nested_css('div.story-left')

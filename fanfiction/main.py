@@ -15,7 +15,7 @@ from scrapy import cmdline
 # # close client
 # client.close()
 
-cmdline.execute('scrapy crawl FanFiktion'.split())
+cmdline.execute('scrapy crawl ArchiveOfOurOwn'.split())
 
 # for pausing and resuming crawls
 # when pausing this crawl, resume it with the same command

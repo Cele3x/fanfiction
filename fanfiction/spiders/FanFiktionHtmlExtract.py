@@ -136,7 +136,7 @@ class FanfiktionHtmlExtractSpider(CrawlSpider, ABC):
         story_path = response.css('#ffcbox-story-topic-1 a::text').getall()
         if story_path:
             loader.add_value('genre', story_path[1])
-            loader.add_value('fandoms', story_path[2:-1])
+            loader.add_value('fandom', story_path[2:-1])
 
         # left side data
         left = loader.nested_css('div.story-left')
@@ -156,7 +156,7 @@ class FanfiktionHtmlExtractSpider(CrawlSpider, ABC):
             definitions = find_story_definitions(story_definitions_block.get())
             left.add_value('category', definitions[0])
             left.add_value('topics', definitions[1])
-            left.add_value('rating', definitions[2])
+            left.add_value('ratings', [definitions[2]])
             left.add_value('pairing', definitions[3])
         if left_sel.xpath('.//span[contains(@title, "Fertiggestellt")]'):
             left.add_value('status', 'done')
