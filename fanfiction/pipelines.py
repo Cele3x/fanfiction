@@ -6,7 +6,11 @@
 import pymongo
 from typing import Union
 from datetime import datetime
+
+from bson import ObjectId
 from itemadapter import ItemAdapter
+from scrapy import Spider
+
 from fanfiction.items import User, Story, Chapter, Review
 from fanfiction.utilities import merge_dict, str_to_int
 
@@ -48,14 +52,12 @@ class FanfictionPipeline:
         """
         self.client.close()
 
-    def process_item(self, item: Union[User, Story, Chapter], _spider):
+    def process_item(self, item: Union[User, Story, Chapter, Review], _spider: Spider) -> Union[None, str, ObjectId]:
         """Determines the type of item and calls its save function accordingly.
         Return value with e.g. a user ID cannot be used since function calls are asynchronous.
 
-        :param item: User | Story
-            The item object to process
-        :param _spider: Any
-            The currently processed spider
+        :param item: The item object to process
+        :param _spider: The currently processed spider
         """
         if isinstance(item, User):
             return self.process_user(item)
@@ -67,8 +69,9 @@ class FanfictionPipeline:
             return self.process_review(item)
         else:
             print('Passed item object is not type of the allowed types!')
+            return None
 
-    def process_story(self, item: Story, is_preliminary=False) -> [str, None]:
+    def process_story(self, item: Story, is_preliminary: bool = False) -> Union[str, None]:
         """Save Story object to the database.
 
         :return: id of updated or created story or None
@@ -206,7 +209,7 @@ class FanfictionPipeline:
             del item['characters']
         return story_id
 
-    def process_chapter(self, item: Chapter, is_preliminary=False) -> [str, None]:
+    def process_chapter(self, item: Chapter, is_preliminary: bool = False) -> Union[str, None]:
         """Save Chapter object to database.
 
         :return: id of updated or created chapter
@@ -245,7 +248,7 @@ class FanfictionPipeline:
                 return self.db['chapters'].insert_one(item).inserted_id
         return None
 
-    def process_user(self, item: User, is_preliminary=False) -> [str, None]:
+    def process_user(self, item: User, is_preliminary: bool = False) -> Union[str, None]:
         """Save User object to the database.
 
         :return: id of updated or created user
@@ -280,7 +283,7 @@ class FanfictionPipeline:
                 return self.db['users'].insert_one(item).inserted_id
         return None
 
-    def process_review(self, item: Review) -> [str, None]:
+    def process_review(self, item: Review) -> Union[str, None]:
         """Save Review object to the database.
 
         :return: id of updated or created review
@@ -422,7 +425,7 @@ class FanfictionHtmlPipeline:
         else:
             print('Passed item object is not type of the allowed types!')
 
-    def process_story(self, item: Story, is_preliminary=False) -> [str, None]:
+    def process_story(self, item: Story, is_preliminary: bool = False) -> Union[str, None]:
         """Save Story object to the database.
 
         :return: id of updated or created story or None
@@ -590,7 +593,7 @@ class FanfictionHtmlPipeline:
 
         return story_id
 
-    def process_chapter(self, item: Chapter, is_preliminary=False) -> [str, None]:
+    def process_chapter(self, item: Chapter, is_preliminary: bool = False) -> Union[str, None]:
         """Save Chapter object to database.
 
         :return: id of updated or created chapter
@@ -666,7 +669,7 @@ class FanfictionHtmlPipeline:
             # set done
             self.db['csv_users'].update_one({'url': item['url']}, {'$set': {'done': True}})
 
-    def process_review(self, item: Review) -> [str, None]:
+    def process_review(self, item: Review) -> Union[str, None]:
         """Save Review object to the database.
 
         :return: id of updated or created review

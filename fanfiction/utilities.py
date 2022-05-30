@@ -43,8 +43,9 @@ def get_date(date_string: str) -> Union[datetime, str]:
         date_string = re.sub(r'[^\d.]', ' ', date_string)  # replace everything except numbers, ':' and '.' characters with spaces
         date_string = re.sub(r'\s{2,}', ' ', date_string)  # replace multiple spaces with single space
         return parser.parse(date_string)
-    except AttributeError:
+    except (AttributeError, TypeError):
         print('Passed item is not a String')
+        print(date_string)
         return date_string
     except (ValueError, ParserError):
         print('Datetime string could not be parsed: ' + date_string)
