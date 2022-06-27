@@ -19,6 +19,7 @@ from fanfiction.items import Story, Chapter, User, Review
 from urllib.parse import urlencode
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from dateutil import parser
 
 
 def find_story_status(text: str, reviewed_on: datetime) -> Union[str, None]:
@@ -92,9 +93,6 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
     def parse_fandom(self, response):
         """Processes fandom by evaluating their type and passing it to the appropriate parser."""
 
-        if response.status != 200:
-            raise CloseSpider('Closing spider due to HTTP error')
-
         for item in response.css('li.work.group'):
             user_url_pseuds = response.urljoin(item.xpath('.//a[starts-with(@href, "/users/")]/@href').get())
             user_url = user_url_pseuds.rsplit('/', 2)[0]
@@ -160,6 +158,16 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
             else:
                 status = find_story_status(chapter_status, datetime.now())
             story_meta.add_value('status', status)
+        story_meta.add_css('likes', 'dd.kudos')
+        story_meta.add_css('hits', 'dd.hits')
+        story_meta.add_css('follows', 'dd.bookmarks a')
+        story_meta.add_css('totalReviewCount', 'dd.comments::text')
+        chapter_status_2 = story_meta_sel.css('dd.chapters::text').get()
+        chapter_status_2_items = [int(x) for x in chapter_status_2.split('/') if x.isdigit()]
+        if len(chapter_status_2_items) == 2:
+            story_meta.add_value('totalChapterCount', chapter_status_2_items[1])
+        elif len(chapter_status_2_items) == 1:
+            story_meta.add_value('totalChapterCount', chapter_status_2_items[0])
 
         story_preface = loader.nested_css('div#workskin div.preface.group')
         story_preface.add_css('title', 'h2.title.heading')
@@ -169,6 +177,7 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
         # yield loader.load_item()
         # yield from self.parse_chapter(response, story_url)
         self.parse_chapter(response, story_url)
+        self.parse_reviews(response, story_url)
 
     def parse_chapter(self, response, story_url, story=None):
         """Parses chapters and following."""
@@ -178,9 +187,8 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
             chapter = response.css('div#chapters')
             loader = ItemLoader(item=Chapter(), selector=chapter)
             loader.add_value('number', 1)
-            loader.add_value('url', response.url)
+            loader.add_value('url', response.urljoin(response.url))
             loader.add_css('content', 'div.userstuff p')
-            print(loader.load_item())
         else:
             for chapter in chapters:
                 loader = ItemLoader(item=Chapter(), selector=chapter)
@@ -192,10 +200,32 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
                 chapter_url = chapter.css('h3.title a::attr(href)').get()
                 loader.add_value('url', chapter_url)
                 loader.add_css('content', 'div.userstuff p')
-                print(loader.load_item())
 
-    def parse_reviews(self, response, chapter_url, chapter=None):
+    def parse_reviews(self, response, story_url, chapter=None):
         """Parses reviews."""
 
-        loader = ItemLoader(item=Review(), selector=response)
+        for review in response.css('div#comments_placeholder > ol.thread > li.comment'):  # without replies yet
+            loader = ItemLoader(item=Review(), selector=review)
+            loader.add_value('reviewableType', 'Chapter')
+            # loader.add_value('reviewableUrl', '') can only use the chapter number!?
+
+            heading_sel = review.css('h4.heading')
+            user_url_pseuds = heading_sel.xpath('.//a[starts-with(@href, "/users/")]/@href').get()
+            if user_url_pseuds:  # anonymous posts possible
+                user_url = response.urljoin(user_url_pseuds.rsplit('/', 2)[0])
+                loader.add_value('userUrl', user_url)
+            reviewed_at_date = heading_sel.css('span.posted span.date::text').get()
+            reviewed_at_month = heading_sel.css('span.posted abbr.month::attr(title)').get()
+            reviewed_at_year = heading_sel.css('span.posted span.year::text').get()
+            reviewed_at_time = heading_sel.css('span.posted span.time::text').get()
+            # reviewed_at_timezone = heading_sel.css('span.posted abbr.timezone::attr(title)').get()
+            reviewed_at_str = ' '.join([reviewed_at_date, reviewed_at_month, reviewed_at_year, reviewed_at_time])
+            loader.add_value('reviewedAt', parser.parse(reviewed_at_str))
+            loader.add_css('content', 'blockquote.userstuff')
+
+            print(loader.load_item())
+
+        next_reviews = response.css('div#comments_placeholder > ol.pagination > li.next a[rel="next"]::attr(href)').get()
+        if next_reviews:
+            yield response.follow(next_reviews, callback=self.parse_reviews, cb_kwargs=dict(story_url=story_url))
 
