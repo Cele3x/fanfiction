@@ -67,14 +67,14 @@ class User(Item):
     country = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     gender = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     age = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    bio = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    bio = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join('\n'))
     source = Field(output_processor=TakeFirst())
 
 
 class Story(Item):
     title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     url = Field(output_processor=TakeFirst())
-    summary = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    summary = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join('\n'))
     status = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     likes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     follows = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
@@ -102,7 +102,7 @@ class Story(Item):
 class Chapter(Item):
     number = Field(output_processor=TakeFirst())
     title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
-    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join('\n'))
     notes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     publishedOn = Field(output_processor=TakeFirst())
     reviewedOn = Field(output_processor=TakeFirst())
@@ -121,3 +121,4 @@ class Review(Item):
     parentReviewedAt = Field(output_processor=TakeFirst())
     parentReviewableType = Field(output_processor=TakeFirst())
     parentReviewableUrl = Field(output_processor=TakeFirst())
+    chapterNumber = Field(output_processor=TakeFirst())

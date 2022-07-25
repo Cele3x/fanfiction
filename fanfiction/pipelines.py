@@ -114,7 +114,7 @@ class FanfictionPipeline:
                 item['ratingId'] = rating['_id']
             else:
                 item['ratingId'] = self.db['ratings'].insert_one({'name1': item['rating'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
-            del item['rating']
+                del item['rating']
 
         # set pairing
         if 'pairing' in item:
@@ -140,7 +140,7 @@ class FanfictionPipeline:
             item['totalChapterCount'] = str_to_int(item['totalChapterCount'])
 
         # exclude item keys that are processed later
-        excluded_keys = ['fandoms', 'topics', 'characters']
+        excluded_keys = ['fandoms', 'topics', 'characters', 'pairings', 'ratings', 'tags']
         story_item = {k: item[k] for k in set(list(item.keys())) - set(excluded_keys)}
         if 'url' in story_item:
             if 'likes' in story_item and story_item['likes']:
@@ -168,7 +168,11 @@ class FanfictionPipeline:
         # set fandoms for story
         fandom_id = None
         if 'fandoms' in item:
-            for f in item['fandoms'].split(', '):
+            if isinstance(item['fandoms'], list):
+                fandoms = item['fandoms']
+            else:
+                fandoms = item['fandoms'].split(', ')
+            for f in fandoms:
                 fandom = self.db['fandoms'].find_one({'$or': [{'name1': f}, {'name2': f}, {'name3': f}]})
                 if fandom:
                     fandom_id = fandom['_id']
@@ -182,7 +186,11 @@ class FanfictionPipeline:
 
         # set topics for story
         if 'topics' in item:
-            for t in item['topics'].split(', '):
+            if isinstance(item['topics'], list):
+                topics = item['topics']
+            else:
+                topics = item['topics'].split(', ')
+            for t in topics:
                 topic = self.db['topics'].find_one({'$or': [{'name1': t}, {'name2': t}, {'name3': t}]})
                 if topic:
                     topic_id = topic['_id']
@@ -196,17 +204,76 @@ class FanfictionPipeline:
 
         # set characters for story
         if 'characters' in item:
-            for c in item['characters'].split(', '):
+            if isinstance(item['characters'], list):
+                characters = item['characters']
+            else:
+                characters = item['characters'].split(', ')
+            for c in characters:
                 character = self.db['characters'].find_one({'fandomId': fandom_id, '$or': [{'name1': c}, {'name2': c}, {'name3': c}]})
                 if character:
                     character_id = character['_id']
                 else:
                     character_id = self.db['characters'].insert_one({'fandomId': fandom_id, 'name1': c, 'name2': None, 'name3': None, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
                 # check if character already exists for story
-                story_characters = self.db['story_characters'].find_one({'storyId': story_id, 'characterId': character_id})
-                if story_characters is None:
+                story_character = self.db['story_characters'].find_one({'storyId': story_id, 'characterId': character_id})
+                if story_character is None:
                     self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
             del item['characters']
+
+        # set ratings for story
+        if 'ratings' in item:
+            for r in item['ratings']:
+                rating = self.db['ratings'].find_one({'$or': [{'name1': r}, {'name2': r}, {'name3': r}]})
+                if rating:
+                    rating_id = rating['_id']
+                else:
+                    rating_id = self.db['ratings'].insert_one({'name1': r, 'name2': None, 'name3': None}).inserted_id
+                # check if rating already exists for story
+                story_rating = self.db['story_ratings'].find_one({'storyId': story_id, 'ratingId': rating_id})
+                if story_rating is None:
+                    self.db['story_ratings'].insert_one({'storyId': story_id, 'ratingId': rating_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
+            del item['ratings']
+
+        # set pairings for story
+        if 'pairings' in item:
+            for p in item['pairings']:
+                pairing = self.db['pairings'].find_one({'$or': [{'name1': p}, {'name2': p}, {'name3': p}]})
+                if pairing:
+                    pairing_id = pairing['_id']
+                else:
+                    pairing_id = self.db['pairings'].insert_one({'name1': p, 'name2': None, 'name3': None}).inserted_id
+                # check if pairing already exists for story
+                story_pairing = self.db['story_pairings'].find_one({'storyId': story_id, 'pairingId': pairing_id})
+                if story_pairing is None:
+                    self.db['story_pairings'].insert_one({'storyId': story_id, 'pairingId': pairing_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
+            del item['pairings']
+
+        # set tags for story
+        if 'tags' in item:
+            for t in item['tags']:
+                # check if tag is a category
+                category = self.db['categories'].find_one({'$or': [{'name1': t}, {'name2': t}]})
+                if category:
+                    self.db['stories'].update_one({'_id': story_id}, {'$set': {'categoryId': category['_id']}})
+                    continue
+
+                # check if tag is a topic
+                topic = self.db['topics'].find_one({'$or': [{'name1': t}, {'name2': t}, {'name3': t}]})
+                if topic:
+                    self.db['story_topics'].insert_one({'storyId': story_id, 'topicId': topic['_id'], 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
+                    continue
+
+                tag = self.db['tags'].find_one({'$or': [{'name1': t}, {'name2': t}, {'name3': t}]})
+                if tag:
+                    tag_id = tag['_id']
+                else:
+                    tag_id = self.db['tags'].insert_one({'name1': t, 'name2': None, 'name3': None}).inserted_id
+                # check if tag already exists for story
+                story_tag = self.db['story_tags'].find_one({'storyId': story_id, 'tagId': tag_id})
+                if story_tag is None:
+                    self.db['story_tags'].insert_one({'storyId': story_id, 'tagId': tag_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
+            del item['tags']
+
         return story_id
 
     def process_chapter(self, item: Chapter, is_preliminary: bool = False) -> Union[str, None]:
@@ -316,6 +383,7 @@ class FanfictionPipeline:
             # anonymous user
             item['userId'] = None
 
+        chapter = None
         if 'reviewableType' in item and 'reviewableUrl' in item:
             if item['reviewableType'] == 'Chapter':
                 # check if chapter already exists
@@ -357,6 +425,8 @@ class FanfictionPipeline:
                 self.db['reviews'].update_one({'_id': review['_id']}, {'$set': updated_review})
                 return review['_id']
             else:
+                if not story and chapter:
+                    story = self.db['stories'].find_one({'_id': chapter['storyId']})
                 if story:
                     if 'currentReviewCount' not in story:
                         story['currentReviewCount'] = 0
@@ -494,7 +564,7 @@ class FanfictionHtmlPipeline:
                     pairing_id = pairing['_id']
                 else:
                     pairing_id = self.db['pairings'].insert_one({'name1': pairing_item, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
-                pairing_ids.append(pairing_id)
+                pairing_ids.append(pairing_id)  # TODO: what for?
                 del item['pairings']
 
         # search for existing user and set authorId if found or create a rudimentary user
@@ -589,7 +659,7 @@ class FanfictionHtmlPipeline:
             del item['characters']
 
         # set done
-        self.db['csv_stories'].update_one({'url': item['url']}, {'$set': {'done': True}})
+        # self.db['csv_stories'].update_one({'url': item['url']}, {'$set': {'done': True}})
 
         return story_id
 
@@ -632,7 +702,7 @@ class FanfictionHtmlPipeline:
                 return self.db['chapters'].insert_one(item).inserted_id
 
         # set done
-        self.db['csv_stories'].update_one({'url': item['url']}, {'$set': {'done': True}})
+        # self.db['csv_stories'].update_one({'url': item['url']}, {'$set': {'done': True}})
 
         return None
 
@@ -667,7 +737,7 @@ class FanfictionHtmlPipeline:
                 self.db['users'].insert_one(item)
 
             # set done
-            self.db['csv_users'].update_one({'url': item['url']}, {'$set': {'done': True}})
+            # self.db['csv_users'].update_one({'url': item['url']}, {'$set': {'done': True}})
 
     def process_review(self, item: Review) -> Union[str, None]:
         """Save Review object to the database.
@@ -739,7 +809,7 @@ class FanfictionHtmlPipeline:
                 review = self.db['reviews'].find_one({'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
 
             # set done
-            self.db['csv_reviews'].update_one({'url': item['url']}, {'$set': {'done': True}})
+            # self.db['csv_reviews'].update_one({'url': item['url']}, {'$set': {'done': True}})
 
             if review:
                 item['updatedAt'] = datetime.now()
