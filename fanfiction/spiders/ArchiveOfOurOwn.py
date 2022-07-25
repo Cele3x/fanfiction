@@ -51,7 +51,7 @@ def find_story_status(text: str, reviewed_on: datetime) -> Union[str, None]:
 
 class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
     name = 'ArchiveOfOurOwn'
-    download_delay = 1
+    download_delay = 2
     allowed_domains = ['archiveofourown.org']
 
     custom_settings = {
@@ -62,7 +62,8 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
     start_urls_genre = 'Books & Literature'
 
     rules = (
-        Rule(LinkExtractor(allow=r'\/tags\/Harry%20Potter', restrict_css='ol.fandom.index'), process_links='add_language_filter', process_request='adjust_request', callback='parse_fandom', follow=False),
+        # Rule(LinkExtractor(allow=r'\/tags\/Harry%20Potter', restrict_css='ol.fandom.index'), process_links='add_language_filter', process_request='adjust_request', callback='parse_fandom', follow=True),
+        Rule(LinkExtractor(allow=r'\/tags\/', restrict_css='ol.fandom.index'), process_links='add_language_filter', process_request='adjust_request', callback='parse_fandom', follow=True),
     )
 
     def __init__(self, *a, **kw):
@@ -94,6 +95,7 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
         """Processes fandom by evaluating their type and passing it to the appropriate parser."""
 
         for item in response.css('li.work.group'):
+            print('HAS WORKS!')
             user_url_pseuds = response.urljoin(item.xpath('.//a[starts-with(@href, "/users/")]/@href').get())
             user_url = user_url_pseuds.rsplit('/', 2)[0]
             user_url_profile = "%s/%s" % (user_url, 'profile')
