@@ -54,7 +54,19 @@ def replace_multiple_spaces(value: str) -> str:
     return re.sub(r'\s+', ' ', value)
 
 
+def replace_escape_chars_with_spaces(value: str) -> str:
+    """Replaces escape chars with spaces.
+
+    :param value: str
+        containing escape chars
+    :return: str
+        where escape chars got replaced with spaces
+    """
+    return replace_escape_chars(value, replace_by=' ')
+
+
 DEFAULT_INPUT_PROCESSORS = MapCompose(replace_tags_with_spaces, replace_escape_chars, replace_entities, replace_nbsp, replace_multiple_spaces, str.strip)
+TEXT_INPUT_PROCESSORS = MapCompose(replace_tags_with_spaces, replace_escape_chars_with_spaces, replace_entities, replace_nbsp, replace_multiple_spaces, str.strip)
 
 
 class User(Item):
@@ -67,14 +79,14 @@ class User(Item):
     country = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     gender = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     age = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
-    bio = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join('\n'))
+    bio = Field(input_processor=TEXT_INPUT_PROCESSORS, output_processor=Join('\n'))
     source = Field(output_processor=TakeFirst())
 
 
 class Story(Item):
     title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
     url = Field(output_processor=TakeFirst())
-    summary = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join('\n'))
+    summary = Field(input_processor=TEXT_INPUT_PROCESSORS, output_processor=Join('\n'))
     status = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     likes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
     follows = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=TakeFirst())
@@ -102,8 +114,8 @@ class Story(Item):
 class Chapter(Item):
     number = Field(output_processor=TakeFirst())
     title = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
-    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join('\n'))
-    notes = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    content = Field(input_processor=TEXT_INPUT_PROCESSORS, output_processor=Join('\n'))
+    notes = Field(input_processor=TEXT_INPUT_PROCESSORS, output_processor=Join(', '))
     publishedOn = Field(output_processor=TakeFirst())
     reviewedOn = Field(output_processor=TakeFirst())
     url = Field(output_processor=TakeFirst())
@@ -113,7 +125,7 @@ class Chapter(Item):
 class Review(Item):
     url = Field(output_processor=TakeFirst())
     userUrl = Field(output_processor=TakeFirst())
-    content = Field(input_processor=DEFAULT_INPUT_PROCESSORS, output_processor=Join(', '))
+    content = Field(input_processor=TEXT_INPUT_PROCESSORS, output_processor=Join(', '))
     reviewedAt = Field(output_processor=TakeFirst())
     reviewableType = Field(output_processor=TakeFirst())
     reviewableUrl = Field(output_processor=TakeFirst())
