@@ -135,7 +135,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'rotating_free_proxies.middlewares.BanDetectionMiddleware': 620,
     # 'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
     # 'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
-    'flat.middlewares.TooManyRequestsRetryMiddleware': 543,
+    'fanfiction.middlewares.TooManyRequestsRetryMiddleware': 543,
 }
 
 # ROTATING_PROXY_LIST = [
