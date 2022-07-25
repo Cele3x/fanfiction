@@ -123,6 +123,7 @@ AUTOTHROTTLE_MAX_DELAY = 60
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+RETRY_HTTP_CODES = [429]
 
 # Enable or disable downloader middlewares
 DOWNLOADER_MIDDLEWARES = {
@@ -134,6 +135,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'rotating_free_proxies.middlewares.BanDetectionMiddleware': 620,
     # 'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
     # 'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+    'flat.middlewares.TooManyRequestsRetryMiddleware': 543,
 }
 
 # ROTATING_PROXY_LIST = [
