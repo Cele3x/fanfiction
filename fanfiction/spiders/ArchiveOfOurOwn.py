@@ -51,11 +51,11 @@ def find_story_status(text: str, reviewed_on: datetime) -> Union[str, None]:
 
 class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
     name = 'ArchiveOfOurOwn'
-    download_delay = 2
+    download_delay = 7.5
     allowed_domains = ['archiveofourown.org']
 
     custom_settings = {
-        # 'JOBDIR': 'crawls/FanFiction-Books',
+        'JOBDIR': 'crawls/AO3-Books',
     }
 
     start_urls = ['https://archiveofourown.org/media/Books%20*a*%20Literature/fandoms']
