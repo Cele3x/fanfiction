@@ -55,7 +55,7 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
     allowed_domains = ['archiveofourown.org']
 
     custom_settings = {
-        'JOBDIR': 'crawls/AO3-Books',
+        'JOBDIR': 'crawls/AO3-Books-2',
     }
 
     start_urls = ['https://archiveofourown.org/media/Books%20*a*%20Literature/fandoms']
@@ -88,14 +88,23 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
         return links
 
     def adjust_request(self, request, _referer):
+        if self.db['temp_fandoms'].find_one({'url': request.url, 'hasWorks': False}):
+            print('SKIP', request.url)
+            return False
         request.cookies.update(self.adult_cookie)
         return request
 
     def parse_fandom(self, response):
         """Processes fandom by evaluating their type and passing it to the appropriate parser."""
 
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), response.status, response.url)
+
+        has_works = False
+        if response.css('li.work.group'):
+            has_works = True
+        self.db['temp_fandoms'].insert_one({'url': response.url, 'hasWorks': has_works})
+
         for item in response.css('li.work.group'):
-            print('HAS WORKS!')
             user_url_pseuds = response.urljoin(item.xpath('.//a[starts-with(@href, "/users/")]/@href').get())
             user_url = user_url_pseuds.rsplit('/', 2)[0]
             user_url_profile = "%s/%s" % (user_url, 'profile')
@@ -106,8 +115,15 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
             if self.db['stories'].find_one({'url': story_url, 'isPreliminary': False}) is None:
                 yield Request(story_url_full_with_comments, cookies=[{'name': 'view_adult', 'value': 'true', 'domain': 'archiveofourown.org', 'path': '/'}], callback=self.parse_story, cb_kwargs=dict(user_url=user_url, story_url=story_url))
 
+        next_stories = response.css('ol.pagination > li.next a[rel="next"]::attr(href)').get()
+        if next_stories:
+            yield response.follow(next_stories, callback=self.parse_fandom)
+
     def parse_user(self, response, user_url):
         """Parses user item."""
+
+        print('\t', 'parsing user from', user_url)
+
         loader = ItemLoader(item=User(), selector=response)
 
         loader.add_value('source', 'ArchiveOfOurOwn')
@@ -127,6 +143,9 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
 
     def parse_story(self, response, user_url, story_url):
         """Parses story item."""
+
+        print('\t', 'parsing story from', story_url)
+
         loader = ItemLoader(item=Story(), selector=response)
 
         loader.add_value('source', 'ArchiveOfOurOwn')
