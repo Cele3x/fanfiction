@@ -1,4 +1,5 @@
 from scrapy import cmdline
+from datetime import datetime
 # from settings import MONGO_URI, MONGO_DB
 # from pymongo import MongoClient
 
@@ -15,7 +16,8 @@ from scrapy import cmdline
 # # close client
 # client.close()
 
-cmdline.execute('scrapy crawl ArchiveOfOurOwn'.split())
+logger = 'logs/ao3_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.log'
+cmdline.execute(['scrapy', 'crawl', 'ArchiveOfOurOwn', '--logfile', logger])
 
 # for pausing and resuming crawls
 # when pausing this crawl, resume it with the same command
