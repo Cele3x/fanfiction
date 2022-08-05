@@ -134,3 +134,4 @@ class Review(Item):
     parentReviewableType = Field(output_processor=TakeFirst())
     parentReviewableUrl = Field(output_processor=TakeFirst())
     chapterNumber = Field(output_processor=TakeFirst())
+    storyUrl = Field(output_processor=TakeFirst())
