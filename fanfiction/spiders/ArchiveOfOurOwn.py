@@ -102,7 +102,7 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
         has_works = False
         if response.css('li.work.group'):
             has_works = True
-        self.db['temp_fandoms'].insert_one({'url': response.url, 'hasWorks': has_works})
+        self.db['temp_fandoms'].insert_one({'url': response.url, 'hasWorks': has_works, 'fandom': self.start_urls_genre})
 
         for item in response.css('li.work.group'):
             user_url_pseuds = response.urljoin(item.xpath('.//a[starts-with(@href, "/users/")]/@href').get())
@@ -233,27 +233,30 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
             loader = ItemLoader(item=Review(), selector=review)
 
             heading_sel = review.css('h4.heading')
+            if not heading_sel:
+                continue
             user_url_pseuds = heading_sel.xpath('.//a[starts-with(@href, "/users/")]/@href').get()
             if user_url_pseuds:  # anonymous posts possible
                 user_url = response.urljoin(user_url_pseuds.rsplit('/', 2)[0])
                 loader.add_value('userUrl', user_url)
-            is_story = True
             chapter_number_str = heading_sel.css('span.parent::text').get()
-            if chapter_number_str:
+            if chapter_number_str:  # is a chapter review
                 chapter_numbers = [int(s) for s in chapter_number_str.split() if s.isdigit()]
                 if len(chapter_numbers) > 0:
                     # loader.add_value('chapterNumber', chapter_numbers)
                     loader.add_value('reviewableType', 'Chapter')
                     reply_href = review.xpath('.//a[contains(text(), "Reply")]/@href').get()
-                    if reply_href:  # TODO: put in function
+                    if reply_href:
                         parsed_reply_url = urlparse(reply_href)
                         chapter_id = parse_qs(parsed_reply_url.query)['chapter_id'][0]
                         parsed_story_url = urlparse(story_url)
                         parsed_chapter_url = parsed_story_url._replace(path=parsed_story_url.path + '/chapters/' + chapter_id, query='')
                         chapter_url = urlunparse(parsed_chapter_url)
-                    loader.add_value('reviewableUrl', chapter_url)
-                    is_story = False
-            if is_story:
+                        loader.add_value('reviewableUrl', chapter_url)
+                    else:  # sometimes only registered users get a reply button
+                        loader.add_value('chapterNumber', chapter_numbers)
+                        loader.add_value('storyUrl', story_url)
+            else:  # is a story review
                 loader.add_value('reviewableUrl', story_url)
                 loader.add_value('reviewableType', 'Story')
             reviewed_at_date = heading_sel.css('span.posted span.date::text').get()

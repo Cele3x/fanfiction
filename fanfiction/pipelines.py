@@ -384,22 +384,28 @@ class FanfictionPipeline:
             item['userId'] = None
 
         chapter = None
-        if 'reviewableType' in item and 'reviewableUrl' in item:
+        if 'reviewableType' in item:
             if item['reviewableType'] == 'Chapter':
                 # check if chapter already exists
-                chapter = self.db['chapters'].find_one({'url': item['reviewableUrl']})
+                if 'reviewableUrl' in item:
+                    chapter = self.db['chapters'].find_one({'url': item['reviewableUrl']})
+                elif 'chapterNumber' in item and 'storyUrl' in item:
+                    story = self.db['stories'].find_one({'url': item['storyUrl']})
+                    if story:
+                        chapter = self.db['chapters'].find_one({'storyId': story['_id'], 'number': item['chapterNumber']})
                 if chapter:
                     item['reviewableId'] = chapter['_id']
-                else:
+                elif 'reviewableUrl' in item:
                     item['reviewableId'] = self.process_chapter(Chapter({'url': item['reviewableUrl']}), True)
-            if item['reviewableType'] == 'Story':
+            if item['reviewableType'] == 'Story' and 'reviewableUrl' in item:
                 # check if story already exists
                 story = self.db['stories'].find_one({'url': item['reviewableUrl']})
                 if story:
                     item['reviewableId'] = story['_id']
                 else:
                     item['reviewableId'] = self.process_story(Story({'url': item['reviewableUrl']}), True)
-            del item['reviewableUrl']
+            if 'reviewableUrl' in item:
+                del item['reviewableUrl']
         else:
             return None
 
