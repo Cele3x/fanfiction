@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
+# -----------------------------------------------------------
+# Reusable database connection for scripts
+# -----------------------------------------------------------
+
 import os
-import csv
-import shutil
 import pymongo
 from dotenv import load_dotenv
 import urllib.parse
-
-from pymongo.database import Database
-from typing import Union
 
 load_dotenv('../.env')
 
