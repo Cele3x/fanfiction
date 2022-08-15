@@ -1,29 +1,17 @@
 #!/usr/bin/python3
 
 # -----------------------------------------------------------
-# Restructures the Database from a Relational Database
-# structure to a Non-Relational MongoDB Database
-# for better performance requests and
-# being able to use the full MongoDB performance and functionality
+# Restructures the database from a relational database
+# structure to a non-relational MongoDB database for being
+# able to use the full MongoDB performance and functionality
+# bandwidth.
 # -----------------------------------------------------------
 
-import os
-import urllib.parse
-import pymongo
-from dotenv import load_dotenv
 from pymongo import IndexModel, ASCENDING
 from tqdm import tqdm
+import db_connect
 
-load_dotenv('../.env')
-
-MONGO_USER = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
-MONGO_PW = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
-MONGO_HOST = os.environ.get('MONGO_HOST')
-MONGO_PORT = os.environ.get('MONGO_PORT')
-MONGO_URI = 'mongodb://%s:%s@%s:%s' % (MONGO_USER, MONGO_PW, MONGO_HOST, MONGO_PORT)
-
-client = pymongo.MongoClient(MONGO_URI)
-db = client['FanfictionDB_refactor']
+db = db_connect.get_database('FanfictionDB_refactor')
 
 try:
     # STORIES
@@ -123,7 +111,12 @@ try:
         for character in characters:
             pbar_character.update(1)
             story_characters = db.story_characters.find({'characterId': character['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$push': {'characters': {'fandom': fandom['name1'], 'character': character['name1']}}})
+            fandomName = None
+            if 'fandomId' in character:
+                fandom = db.fandoms.find({'_id': character['fandomId']})
+                if fandom:
+                    fandomName = fandom['name1']
+            db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$push': {'characters': {'fandom': fandomName, 'character': character['name1']}}})
 
     # remove unused fields
     unset_fields = {'currentChapterCount': 1,
@@ -226,4 +219,4 @@ try:
 
     print('Done!')
 finally:
-    client.close()
+    db_connect.disconnect()

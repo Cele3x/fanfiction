@@ -1,10 +1,17 @@
+#!/usr/bin/python3
+
+# -----------------------------------------------------------
+# Extracts archives for storing them in a new archive
+# consisting of 1,000 files.
+# -----------------------------------------------------------
+
 import os
 import tarfile
 from glob import glob
 from datetime import datetime
 
 
-def archive_files(item_type):
+def archive_files(item_type: str) -> None:
     file_count = 0
     archive_count = 0
     output_path = 'temp/'
@@ -32,6 +39,6 @@ def archive_files(item_type):
     print('Archive:', archive_name)
 
 
-# archive_files('users')
-# archive_files('stories')
+archive_files('users')
+archive_files('stories')
 archive_files('reviews')
