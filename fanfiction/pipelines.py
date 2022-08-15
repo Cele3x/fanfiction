@@ -167,6 +167,12 @@ class FanfictionPipeline:
 
         # set fandoms for story
         fandom_id = None
+        if 'fandom' in item:
+            if 'fandoms' in item:
+                item['fandoms'].append(item['fandom'])
+            else:
+                item['fandoms'] = [item['fandom']]
+            del item['fandom']
         if 'fandoms' in item:
             if isinstance(item['fandoms'], list):
                 fandoms = item['fandoms']
@@ -311,7 +317,7 @@ class FanfictionPipeline:
                 # set current chapter count
                 if 'storyId' in item:
                     current_chapter_count = self.db['chapters'].count_documents({'storyId': item['storyId']})
-                    self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1}})
+                    self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1, 'hasMissingChapters': False}})
                 return self.db['chapters'].insert_one(item).inserted_id
         return None
 
@@ -664,15 +670,12 @@ class FanfictionHtmlPipeline:
                         self.db['story_characters'].insert_one({'storyId': story_id, 'characterId': character_id, 'createdAt': datetime.now(), 'updatedAt': datetime.now()})
             del item['characters']
 
-        # set done
-        # self.db['csv_stories'].update_one({'url': item['url']}, {'$set': {'done': True}})
-
         return story_id
 
     def process_chapter(self, item: Chapter, is_preliminary: bool = False) -> Union[str, None]:
         """Save Chapter object to database.
 
-        :return: id of updated or created chapter
+        :return: id of updated or created chapter or None
         :param item: Chapter
         :param is_preliminary: Boolean indicating if the reason for creating the user is for association purposes
         """
@@ -707,18 +710,18 @@ class FanfictionHtmlPipeline:
                     self.db['stories'].update_one({'_id': item['storyId']}, {'$set': {'currentChapterCount': current_chapter_count + 1}})
                 return self.db['chapters'].insert_one(item).inserted_id
 
-        # set done
-        # self.db['csv_stories'].update_one({'url': item['url']}, {'$set': {'done': True}})
-
         return None
 
-    def process_user(self, item: User):
+    def process_user(self, item: User, is_preliminary: bool = False) -> Union[str, None]:
         """Save User object to the database.
 
+        :return: id of updated or created user or None
         :param item: User
+        :param is_preliminary: Boolean indicating if the reason for creating the user is for association purposes
         """
 
         item = ItemAdapter(item).asdict()
+        item['isPreliminary'] = is_preliminary
 
         # set user source
         if 'source' in item:
@@ -737,13 +740,11 @@ class FanfictionHtmlPipeline:
                 item['updatedAt'] = datetime.now()
                 updated_user = merge_dict(user, item)
                 self.db['users'].update_one({'_id': user['_id']}, {'$set': updated_user})
+                return user['_id']
             else:
                 item['createdAt'] = datetime.now()
                 item['updatedAt'] = datetime.now()
-                self.db['users'].insert_one(item)
-
-            # set done
-            # self.db['csv_users'].update_one({'url': item['url']}, {'$set': {'done': True}})
+                return self.db['users'].insert_one(item).inserted_id
 
     def process_review(self, item: Review) -> Union[str, None]:
         """Save Review object to the database.
@@ -814,9 +815,6 @@ class FanfictionHtmlPipeline:
             else:  # anonymous user
                 review = self.db['reviews'].find_one({'reviewedAt': item['reviewedAt'], 'reviewableType': item['reviewableType'], 'reviewableId': item['reviewableId']})
 
-            # set done
-            # self.db['csv_reviews'].update_one({'url': item['url']}, {'$set': {'done': True}})
-
             if review:
                 item['updatedAt'] = datetime.now()
                 updated_review = merge_dict(review, item)
@@ -830,5 +828,5 @@ class FanfictionHtmlPipeline:
                 item['createdAt'] = datetime.now()
                 item['updatedAt'] = datetime.now()
                 return self.db['reviews'].insert_one(item).inserted_id
-        else:
-            return None
+
+        return None
