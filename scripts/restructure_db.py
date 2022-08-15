@@ -113,7 +113,7 @@ try:
             story_characters = db.story_characters.find({'characterId': character['_id']}).distinct('storyId')
             fandomName = None
             if 'fandomId' in character:
-                fandom = db.fandoms.find({'_id': character['fandomId']})
+                fandom = db.fandoms.find_one({'_id': character['fandomId']})
                 if fandom:
                     fandomName = fandom['name1']
             db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$push': {'characters': {'fandom': fandomName, 'character': character['name1']}}})
