@@ -55,7 +55,7 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
     allowed_domains = ['archiveofourown.org']
 
     custom_settings = {
-        'JOBDIR': 'crawls/AO3-Books-2',
+        'JOBDIR': 'crawls/AO3-Books',
     }
 
     start_urls = ['https://archiveofourown.org/media/Books%20*a*%20Literature/fandoms']
@@ -88,7 +88,7 @@ class ArchiveOfOurOwnSpider(CrawlSpider, ABC):
         return links
 
     def adjust_request(self, request, _referer):
-        if self.db['temp_fandoms'].find_one({'url': request.url, 'hasWorks': False}):
+        if self.db['temp_fandoms'].find_one({'url': request.url, 'hasWorks': False, 'fandom': self.start_urls_genre}):
             print('SKIP', request.url)
             return False
         request.cookies.update(self.adult_cookie)
