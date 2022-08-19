@@ -199,10 +199,18 @@ try:
                      IndexModel([('status', ASCENDING)]),
                      IndexModel([('tags', ASCENDING)]),
                      IndexModel([('topics', ASCENDING)]),
-                     IndexModel([('characters', ASCENDING)])]
+                     IndexModel([('characters', ASCENDING)]),
+                     IndexModel([('numSentences', ASCENDING)]),
+                     IndexModel([('numWords', ASCENDING)]),
+                     IndexModel([('numLetters', ASCENDING)]),
+                     IndexModel([('numCharacters', ASCENDING)])]
     db.stories.create_indexes(story_indexes)
 
-    chapter_indexes = [IndexModel([('storyId', ASCENDING)])]
+    chapter_indexes = [IndexModel([('storyId', ASCENDING)]),
+                       IndexModel([('numSentences', ASCENDING)]),
+                       IndexModel([('numWords', ASCENDING)]),
+                       IndexModel([('numLetters', ASCENDING)]),
+                       IndexModel([('numCharacters', ASCENDING)])]
     db.chapters.create_indexes(chapter_indexes)
 
     review_indexes = [IndexModel([('parentId', ASCENDING)]),
