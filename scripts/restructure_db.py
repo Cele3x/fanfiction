@@ -11,7 +11,7 @@ from pymongo import IndexModel, ASCENDING
 from tqdm import tqdm
 import db_connect
 
-db = db_connect.get_database('FanfictionDB_refactor')
+db = db_connect.get_database('FanFiction')
 
 try:
     # STORIES
