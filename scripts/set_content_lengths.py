@@ -5,13 +5,16 @@
 # sentences, words, letter characters and all characters
 # while storing the results for each document.
 # -----------------------------------------------------------
+from time import sleep
 
+from bson import ObjectId, InvalidBSON
+from pymongo import UpdateOne
 from tqdm import tqdm
 import re
 import spacy
 import db_connect
 
-db = db_connect.get_database('FanfictionDB_refactor')
+db = db_connect.get_database('FanFiction')
 
 try:
     # processing chapters
@@ -21,6 +24,7 @@ try:
     nlp = spacy.load('de_core_news_sm')
 
     with tqdm(total=chapter_count) as pbar_chapter:
+        chapter_updates = []
         for chapter in chapters:
             pbar_chapter.set_description('Processing chapter %s' % chapter['_id'])
             sentence_count = 0
@@ -44,54 +48,58 @@ try:
                 character_count = len(content)
                 character_letters_count = len(content_letters)
 
-                # save to database
-                db.chapters.update_one({'_id': chapter['_id']}, {'$set': {'numSentences': sentence_count, 'numWords': word_count, 'numLetters': character_letters_count, 'numCharacters': character_count}})
-
-            pbar_chapter.update(1)
+                # queue for bulk update
+                chapter_updates.append(UpdateOne({'_id': chapter['_id']}, {'$set': {'numSentences': sentence_count, 'numWords': word_count, 'numLetters': character_letters_count, 'numCharacters': character_count}}))
+                if len(chapter_updates) % 1000 == 0:
+                    pbar_chapter.set_description('Writing bulk data')
+                    db.chapters.bulk_write(chapter_updates)
+                    chapter_updates = []
+                pbar_chapter.update(1)
+        pbar_chapter.set_description('Writing bulk data')
+        db.chapters.bulk_write(chapter_updates)
 
     # processing stories
     stories_count = db.stories.count_documents({'numSentences': None})
-    stories = db.stories.aggregate([
-        {
-            '$lookup': {
-                'from': 'chapters',
-                'localField': '_id',
-                'foreignField': 'storyId',
-                'as': 'chapter'
-            }
-        },
-        {
-            '$match': {'numSentences': None, 'chapter.numSentences': {'$exists': True}}
-        },
-        {
-            '$project': {
-                '_id': 1,
-                'numSentences': {'$sum': '$chapter.numSentences'},
-                'numWords': {'$sum': '$chapter.numWords'},
-                'numLetters': {'$sum': '$chapter.numLetters'},
-                'numCharacters': {'$sum': '$chapter.numCharacters'}
-            }
-        },
-    ])
+    stories = db.stories.find({'numSentences': None})
 
     with tqdm(total=stories_count) as pbar_story:
+        story_updates = []
         for story in stories:
             pbar_story.set_description('Processing story %s' % story['_id'])
             sentence_count = 0
             word_count = 0
             character_letters_count = 0
             character_count = 0
-            if 'numSentences' in story:
-                sentence_count = story['numSentences']
-            if 'numWords' in story:
-                word_count = story['numWords']
-            if 'numLetters' in story:
-                character_letters_count = story['numLetters']
-            if 'numCharacters' in story:
-                character_count = story['numCharacters']
-            db.stories.update_one({'_id': story['_id']}, {'$set': {'numSentences': sentence_count, 'numWords': word_count, 'numLetters': character_letters_count, 'numCharacters': character_count}})
-
+            story_sums = db.chapters.aggregate([
+                {
+                    '$match': {'storyId': story['_id'], 'numSentences': {'$exists': True}}
+                },
+                {
+                    '$group': {
+                        '_id': '$storyId',
+                        'numSentences': {'$sum': '$numSentences'},
+                        'numWords': {'$sum': '$numWords'},
+                        'numLetters': {'$sum': '$numLetters'},
+                        'numCharacters': {'$sum': '$numCharacters'}
+                    }
+                }
+            ])
+            if 'numSentences' in story_sums:
+                sentence_count = story_sums['numSentences']
+            if 'numWords' in story_sums:
+                word_count = story_sums['numWords']
+            if 'numLetters' in story_sums:
+                character_letters_count = story_sums['numLetters']
+            if 'numCharacters' in story_sums:
+                character_count = story_sums['numCharacters']
+            story_updates.append(UpdateOne({'_id': story['_id']}, {'$set': {'numSentences': sentence_count, 'numWords': word_count, 'numLetters': character_letters_count, 'numCharacters': character_count}}))
+            if len(story_updates) % 1000 == 0:
+                pbar_story.set_description('Writing bulk data')
+                db.stories.bulk_write(story_updates)
+                story_updates = []
             pbar_story.update(1)
+        pbar_story.set_description('Writing bulk data')
+        db.stories.bulk_write(story_updates)
 
 finally:
     db_connect.disconnect()
