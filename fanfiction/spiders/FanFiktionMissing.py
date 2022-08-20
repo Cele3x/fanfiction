@@ -5,7 +5,6 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from tqdm import tqdm
 
 from scrapy.exceptions import CloseSpider
-from twisted.internet.error import DNSLookupError, TCPTimedOutError
 
 from fanfiction.settings import MONGO_URI, MONGO_DB
 from pymongo import MongoClient
@@ -49,15 +48,24 @@ class FanfiktionSpider(CrawlSpider, ABC):
     }
 
     def start_requests(self):
-        stories = self.db.stories.find({'hasMissingChapters': True})
-        stories_count = self.db.stories.count_documents({'hasMissingChapters': True})
+        items = self.db.chapters.find({'hasMissingContent': True, 'notFound': None})
+        items_count = self.db.chapters.count_documents({'hasMissingContent': True, 'notFound': None})
 
-        with tqdm(total=stories_count) as pbar:
-            for story in stories:
+        with tqdm(total=items_count) as pbar:
+            for item in items:
                 pbar.update(1)
-                if 'url' in story:
-                    pbar.set_description('Processing ' + story['url'].split('/')[4])
-                    yield Request(url=story['url'], callback=self.parse_story, cookies=self.auth_cookies, errback=self.handle_failed_request, cb_kwargs=dict(story=story))
+                if 'url' in item:
+                    pbar.set_description('Processing ' + item['url'].split('/')[4])
+                    if 'storyId' in item:
+                        story = self.db.stories.find_one({'_id': ObjectId(item['storyId'])})
+                        if story and 'url' in story:
+                            story_url = story['url']
+                    else:
+                        story_url = '/'.join(item['url'].split('/')[0:5])
+                    if story_url:
+                        yield Request(url=item['url'], callback=self.parse_chapter, cookies=self.auth_cookies, errback=self.handle_failed_request, cb_kwargs=dict(story_url=story_url))
+                    else:
+                        self.db.chapters.update_one({'_id': ObjectId(item['_id'])}, {'$set': {'storyNotFound': True}})
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
@@ -65,7 +73,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         self.client = MongoClient(MONGO_URI)
         self.db = self.client[MONGO_DB]
         self.auth_cookies = [
-            {'name': 'i', 'value': '646ca5d5f1403952de57394bfffabf18f8d7301d2028d8544e1c123162f833272a91db360c0516f116e9144ed6158be80bdc85d6f75df50567684b0537beaf79', 'domain': '.fanfiktion.de', 'path': '/'},
+            {'name': 'i', 'value': 'cc7b3ffec97736ee46c8b851999e100ea8eee431770b2b645c5cadbc6300a0984a0557a934f0d76a33e352b517ba587c8d528dc77ce4933fdb6f79b1160b0eec', 'domain': '.fanfiktion.de', 'path': '/'},
             {'name': 'l', 'value': 'TzB%2A%2B.c%3D%5E%7DGw-051%23%3Ap5', 'domain': '.fanfiktion.de', 'path': '/'},
             {'name': 's', 'value': '1', 'domain': '.fanfiktion.de', 'path': '/'},
             {'name': 'u', 'value': 'LzSjZ9KrMDBnnciV%7CWnHRuyshembsTrAQoHGTbWXwXCrHhbxXpyaow30g0Tc%3D', 'domain': '.fanfiktion.de', 'path': '/'},
@@ -79,6 +87,7 @@ class FanfiktionSpider(CrawlSpider, ABC):
         if failure.check(HttpError):
             response = failure.value.response
             self.db['stories'].update_one({'url': response.url}, {'$set': {'notFound': True}})
+            self.db['chapters'].update_one({'url': response.url}, {'$set': {'notFound': True}})
             self.logger.error('HttpError on %s', response.url)
 
     def parse_item(self, response):
@@ -179,6 +188,8 @@ class FanfiktionSpider(CrawlSpider, ABC):
             user_url = response.urljoin(user_url_sub)
         left.add_value('authorUrl', user_url)
         left.add_value('url', response.url)
+        if len(response.url.split('/')) > 4:
+            left.add_value('iid', response.url.split('/')[4])
         published_on = left_sel.xpath('.//span[contains(@title, "erstellt")]/../text()').getall()
         if published_on:
             left.add_value('publishedOn', get_date(''.join(published_on)))
@@ -201,6 +212,11 @@ class FanfiktionSpider(CrawlSpider, ABC):
     def parse_chapter(self, response, story_url, story=None, total_chapter_count='0'):
         """Parses chapters and following."""
 
+        if response.css('div#content > div.pageviewframe').xpath('.//div[contains(., "Geschichte wurde gesperrt")]'):
+            self.logger.error('Chapter got locked from url %s', response.url)
+            self.db['chapters'].update_one({'url': response.url}, {'$set': {'isLocked': True}})
+            return
+
         right_sel = response.css('div.story-right')
         loader = ItemLoader(item=Chapter(), selector=right_sel)
         loader.add_value('storyUrl', story_url)
@@ -217,20 +233,20 @@ class FanfiktionSpider(CrawlSpider, ABC):
             loader.add_value('title', chapter_title)
         yield loader.load_item()
 
-        if not story:  # story is missing so far
-            next_chapter = right_sel.xpath('.//a[contains(@title, "nächstes Kapitel")]/@href').get()
-            if next_chapter:
-                yield response.follow(next_chapter, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url, story=story, total_chapter_count=total_chapter_count))
-        else:  # chapters are missing
-            for chapter_number in range(1, str_to_int(total_chapter_count)):
-                chapter = self.db['chapters'].find_one({'storyId': ObjectId(story['_id']), 'number': chapter_number, 'isPreliminary': False})
-                if not chapter:
-                    url_parts = response.url.split('/')
-                    url_parts[-2] = str(chapter_number)
-                    chapter_url = '/'.join(url_parts)
-                    yield Request(chapter_url, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url, story=story, total_chapter_count=total_chapter_count))
+        # if not story:  # story is missing so far
+        #     next_chapter = right_sel.xpath('.//a[contains(@title, "nächstes Kapitel")]/@href').get()
+        #     if next_chapter:
+        #         yield response.follow(next_chapter, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url, story=story, total_chapter_count=total_chapter_count))
+        # else:  # chapters are missing
+        #     for chapter_number in range(1, str_to_int(total_chapter_count)):
+        #         chapter = self.db['chapters'].find_one({'storyId': ObjectId(story['_id']), 'number': chapter_number, 'isPreliminary': False})
+        #         if not chapter:
+        #             url_parts = response.url.split('/')
+        #             url_parts[-2] = str(chapter_number)
+        #             chapter_url = '/'.join(url_parts)
+        #             yield Request(chapter_url, callback=self.parse_chapter, cb_kwargs=dict(story_url=story_url, story=story, total_chapter_count=total_chapter_count))
 
-    def parse_user(self, response):
+    def parse_user(self, response, user=None):
         """Parses user item."""
 
         loader = ItemLoader(item=User(), selector=response)
