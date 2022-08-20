@@ -9,7 +9,7 @@
 import tarfile
 import os
 import shutil
-import db_connect
+from db_connect import DatabaseConnection
 
 INPUT_ARCHIVE_PATH_USERS = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/data/html-users-20220222_books/'
 OUTPUT_PATH_USERS = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/data/html-books-extracted-users/'
@@ -20,7 +20,8 @@ OUTPUT_PATH_STORIES = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/dat
 INPUT_ARCHIVE_PATH_REVIEWS = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/data/html-reviews-20220222_books/'
 OUTPUT_PATH_REVIEWS = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/data/html-books-extracted-reviews/'
 
-db = db_connect.get_database()
+client = DatabaseConnection()
+db = client.connect('FanfictionDB')
 
 try:
     # extract archives with user html pages and store in csv_users collection
@@ -109,4 +110,4 @@ try:
                             db['csv_reviews'].insert_one({'done': False, 'filename': filename, 'uid': uid, 'url': url, 'extracted_folder': datestamp, 'page': page})
 
 finally:
-    db_connect.disconnect()
+    client.disconnect()

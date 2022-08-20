@@ -10,24 +10,40 @@ import os
 import pymongo
 from dotenv import load_dotenv
 import urllib.parse
-from typing import Optional
 from pymongo.database import Database
 
-load_dotenv('../.env')
 
-MONGO_USER = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
-MONGO_PW = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
-MONGO_HOST = os.environ.get('MONGO_HOST')
-MONGO_PORT = os.environ.get('MONGO_PORT')
-MONGO_DB = os.environ.get('MONGO_DB')
-MONGO_URI = 'mongodb://%s:%s@%s:%s' % (MONGO_USER, MONGO_PW, MONGO_HOST, MONGO_PORT)
-
-client = pymongo.MongoClient(MONGO_URI)
-
-
-def get_database(db_name: Optional[str] = MONGO_DB) -> Database:
-    return client[db_name]
+def get_mongo_uri() -> str | bool:
+    try:
+        load_dotenv()
+        user = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
+        pw = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
+        host = os.environ.get('MONGO_HOST')
+        port = os.environ.get('MONGO_PORT')
+        return 'mongodb://%s:%s@%s:%s' % (user, pw, host, port)
+    except Exception as e:
+        print(e)
+        return False
 
 
-def disconnect() -> None:
-    client.close()
+class DatabaseConnection:
+
+    def __init__(self):
+        self.uri = get_mongo_uri()
+        self.client = None
+
+    def connect(self, database_name: str) -> Database | bool:
+        try:
+            self.client = pymongo.MongoClient(self.uri)
+            return self.client[database_name]
+        except Exception as e:
+            print(e)
+            return False
+
+    def disconnect(self) -> bool:
+        try:
+            self.client.close()
+            return True
+        except Exception as e:
+            print(e)
+            return False

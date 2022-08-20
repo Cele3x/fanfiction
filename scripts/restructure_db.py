@@ -9,9 +9,10 @@
 
 from pymongo import IndexModel, ASCENDING
 from tqdm import tqdm
-import db_connect
+from db_connect import DatabaseConnection
 
-db = db_connect.get_database('FanFiction')
+client = DatabaseConnection()
+db = client.connect('FanfictionDB')
 
 try:
     # STORIES
@@ -227,4 +228,4 @@ try:
 
     print('Done!')
 finally:
-    db_connect.disconnect()
+    client.disconnect()
