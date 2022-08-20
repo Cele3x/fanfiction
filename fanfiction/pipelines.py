@@ -309,6 +309,8 @@ class FanfictionPipeline:
             if chapter:  # merge and update chapter
                 item['updatedAt'] = datetime.now()
                 updated_chapter = merge_dict(chapter, item)
+                if 'content' in updated_chapter:
+                    updated_chapter['hasMissingContent'] = False
                 self.db['chapters'].update_one({'_id': chapter['_id']}, {'$set': updated_chapter})
                 return chapter['_id']
             else:  # create new chapter
