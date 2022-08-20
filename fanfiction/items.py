@@ -109,6 +109,7 @@ class Story(Item):
     ageVerification = Field(output_processor=TakeFirst())
     totalChapterCount = Field(output_processor=TakeFirst())
     totalReviewCount = Field(output_processor=TakeFirst())
+    iid = Field(output_processor=TakeFirst())
 
 
 class Chapter(Item):
