@@ -7,13 +7,15 @@
 # -----------------------------------------------------------
 
 import os
+from typing import Union
+
 import pymongo
 from dotenv import load_dotenv
 import urllib.parse
 from pymongo.database import Database
 
 
-def get_mongo_uri() -> str | bool:
+def get_mongo_uri() -> Union[str, bool]:
     try:
         load_dotenv()
         user = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
@@ -32,7 +34,7 @@ class DatabaseConnection:
         self.uri = get_mongo_uri()
         self.client = None
 
-    def connect(self, database_name: str) -> Database | bool:
+    def connect(self, database_name: str) -> Union[Database, bool]:
         try:
             self.client = pymongo.MongoClient(self.uri)
             return self.client[database_name]
