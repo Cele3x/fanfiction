@@ -150,7 +150,11 @@ class FanfictionPipeline:
             if 'hits' in story_item and story_item['hits']:
                 story_item['hits'] = str_to_int(story_item['hits'])
             # check if story already exists
-            story = self.db['stories'].find_one({'url': story_item['url']})
+            story = None
+            if 'iid' in story_item:
+                story = self.db['stories'].find_one({'iid': story_item['iid']})
+            if not story:
+                story = self.db['stories'].find_one({'url': story_item['url']})
             if story:  # merge and update story
                 story_item['updatedAt'] = datetime.now()
                 updated_story = merge_dict(story, story_item)
@@ -578,7 +582,7 @@ class FanfictionHtmlPipeline:
                     pairing_id = pairing['_id']
                 else:
                     pairing_id = self.db['pairings'].insert_one({'name1': pairing_item, 'createdAt': datetime.now(), 'updatedAt': datetime.now()}).inserted_id
-                pairing_ids.append(pairing_id)  # TODO: what for?
+                pairing_ids.append(pairing_id)
                 del item['pairings']
 
         # search for existing user and set authorId if found or create a rudimentary user
