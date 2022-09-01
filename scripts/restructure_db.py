@@ -12,7 +12,7 @@ from tqdm import tqdm
 from db_connect import DatabaseConnection
 
 client = DatabaseConnection()
-db = client.connect('FanfictionDB')
+db = client.connect('FanFiction')
 
 try:
     # STORIES
@@ -61,7 +61,7 @@ try:
             pbar_pairing.update(1)
             db.temp_stories.update_many({'pairingId': pairing['_id']}, {'$set': {'pairings': [pairing['name2']]}})
             story_pairings = db.story_pairings.find({'pairingId': pairing['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_pairings}}, {'$push': {'pairings': pairing['name2']}})
+            db.temp_stories.update_many({'_id': {'$in': story_pairings}}, {'$addToSet': {'pairings': pairing['name2']}})
 
     # - ratings
     ratings = db.ratings.find({})
@@ -72,7 +72,7 @@ try:
             pbar_rating.update(1)
             db.temp_stories.update_many({'ratingId': rating['_id']}, {'$set': {'ratings': [rating['name1']]}})
             story_ratings = db.story_ratings.find({'ratingId': rating['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_ratings}}, {'$push': {'ratings': rating['name1']}})
+            db.temp_stories.update_many({'_id': {'$in': story_ratings}}, {'$addToSet': {'ratings': rating['name1']}})
 
     # - fandoms
     fandoms = db.fandoms.find({})
@@ -82,7 +82,7 @@ try:
         for fandom in fandoms:
             pbar_fandom.update(1)
             story_fandoms = db.story_fandoms.find({'fandomId': fandom['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_fandoms}}, {'$push': {'fandoms': fandom['name1']}})
+            db.temp_stories.update_many({'_id': {'$in': story_fandoms}}, {'$addToSet': {'fandoms': {'name': fandom['name1'], 'tier1': fandom['tier1'], 'tier2': fandom['tier2'], 'tier3': fandom['tier3']}}})
 
     # - tags
     tags = db.tags.find({})
@@ -92,7 +92,7 @@ try:
         for tag in tags:
             pbar_tag.update(1)
             story_tags = db.story_tags.find({'tagId': tag['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_tags}}, {'$push': {'tags': tag['name1']}})
+            db.temp_stories.update_many({'_id': {'$in': story_tags}}, {'$addToSet': {'tags': tag['name1']}})
 
     # - topics
     topics = db.topics.find({})
@@ -102,7 +102,7 @@ try:
         for topic in topics:
             pbar_topic.update(1)
             story_topics = db.story_topics.find({'topicId': topic['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_topics}}, {'$push': {'topics': topic['name1']}})
+            db.temp_stories.update_many({'_id': {'$in': story_topics}}, {'$addToSet': {'topics': topic['name1']}})
 
     # - characters
     characters = db.characters.find({})
@@ -117,7 +117,7 @@ try:
                 fandom = db.fandoms.find_one({'_id': character['fandomId']})
                 if fandom:
                     fandomName = fandom['name1']
-            db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$push': {'characters': {'fandom': fandomName, 'character': character['name1']}}})
+            db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$addToSet': {'characters': {'fandom': fandomName, 'character': character['name1']}}})
 
     # remove unused fields
     unset_fields = {'currentChapterCount': 1,
@@ -129,7 +129,13 @@ try:
                     'categoryId': 1,
                     'genreId': 1,
                     'pairingId': 1,
-                    'ratingId': 1}
+                    'ratingId': 1,
+                    'hasMissingChapters': 1,
+                    'isRedirected': 1,
+                    'redirectedFrom': 1,
+                    'redirectedTo': 1,
+                    'isLocked': 1,
+                    'ageVerification': 1}
     db.temp_stories.update_many({}, {'$unset': unset_fields})
 
     print('Done!\n')
@@ -141,13 +147,29 @@ try:
     db.chapters.drop_indexes()
 
     # remove unused fields
-    unset_fields = {'isPreliminary': 1}
+    unset_fields = {'isPreliminary': 1,
+                    'hasMissingContent': 1,
+                    'notFound': 1,
+                    'isRedirected': 1,
+                    'storyNotFound': 1,
+                    'hasMissingStory': 1,
+                    'ageVerification': 1,
+                    'redirectedFrom': 1,
+                    'redirectedTo': 1}
     db.chapters.update_many({}, {'$unset': unset_fields})
 
     print('Done!\n')
 
     # REVIEWS
     print('Processing reviews...')
+
+    # remove unused fields
+    unset_fields = {'parentReviewableType': 1,
+                    'parentReviewableUrl': 1,
+                    'parentReviewedAt': 1,
+                    'chapterNumber': 1,
+                    'storyUrl': 1}
+    db.reviews.update_many({}, {'$unset': unset_fields})
 
     # drop all indexes
     db.reviews.drop_indexes()
@@ -170,7 +192,9 @@ try:
             db.temp_users.update_many({'sourceId': source['_id']}, {'$set': {'source': source['name']}})
 
     # remove unused fields
-    unset_fields = {'isPreliminary': 1}
+    unset_fields = {'isPreliminary': 1,
+                    'setUsername': 1,
+                    'notFound': 1}
     db.temp_users.update_many({}, {'$unset': unset_fields})
 
     print('Done!\n')
@@ -191,6 +215,7 @@ try:
 
     # - index collections
     story_indexes = [IndexModel([('authorId', ASCENDING)]),
+                     IndexModel([('iid', ASCENDING)]),
                      IndexModel([('category', ASCENDING)]),
                      IndexModel([('fandoms', ASCENDING)]),
                      IndexModel([('genre', ASCENDING)]),
