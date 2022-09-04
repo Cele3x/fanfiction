@@ -82,7 +82,19 @@ try:
         for fandom in fandoms:
             pbar_fandom.update(1)
             story_fandoms = db.story_fandoms.find({'fandomId': fandom['_id']}).distinct('storyId')
-            db.temp_stories.update_many({'_id': {'$in': story_fandoms}}, {'$addToSet': {'fandoms': {'name': fandom['name1'], 'tier1': fandom['tier1'], 'tier2': fandom['tier2'], 'tier3': fandom['tier3']}}})
+            tiers = []
+            fandom_item = {}
+            if 'tier1' in fandom and fandom['tier1'] is not None:
+                tiers.append(' || '.join(fandom['tier1']))
+                fandom_item['tier1'] = ' || '.join(fandom['tier1'])
+            if 'tier2' in fandom and fandom['tier2'] is not None:
+                tiers.append(' || '.join(fandom['tier2']))
+                fandom_item['tier2'] = ' || '.join(fandom['tier2'])
+            if 'tier3' in fandom and fandom['tier3'] is not None:
+                tiers.append(' || '.join(fandom['tier3']))
+                fandom_item['tier3'] = ' || '.join(fandom['tier3'])
+            fandom_item['name'] = ' - '.join(tiers)
+            db.temp_stories.update_many({'_id': {'$in': story_fandoms}}, {'$addToSet': {'fandoms': fandom_item}})
 
     # - tags
     tags = db.tags.find({})
@@ -112,17 +124,18 @@ try:
         for character in characters:
             pbar_character.update(1)
             story_characters = db.story_characters.find({'characterId': character['_id']}).distinct('storyId')
-            fandomName = None
+            fandom_name = None
             if 'fandomId' in character:
                 fandom = db.fandoms.find_one({'_id': character['fandomId']})
                 if fandom:
-                    fandomName = fandom['name1']
-            db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$addToSet': {'characters': {'fandom': fandomName, 'character': character['name1']}}})
+                    fandom_name = ' || '.join(fandom['tier1']) if 'tier1' in fandom else ' || '.join(fandom['name1'])
+            db.temp_stories.update_many({'_id': {'$in': story_characters}}, {'$addToSet': {'characters': {'fandom': fandom_name, 'character': character['name1']}}})
 
     # remove unused fields
     unset_fields = {'currentChapterCount': 1,
                     'currentReviewCount': 1,
                     'isPreliminary': 1,
+                    'fandom': 1,
                     'totalChapterCount': 1,
                     'totalReviewCount': 1,
                     'sourceId': 1,
