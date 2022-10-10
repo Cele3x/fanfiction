@@ -21,5 +21,4 @@ matplotlib~=3.6.1
 scikit-learn~=1.1.2
 selenium~=3.141.0
 keras~=2.10.0
-tensorflow-macos~=2.10.0
-tensorflow-metal~=0.6.0
+tensorflow~=2.10.0
