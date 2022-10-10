@@ -4,7 +4,6 @@
 # -----------------------------------------------------------
 
 import fnmatch
-import traceback
 from typing import Optional
 
 from scripts.db_connect import DatabaseConnection
@@ -84,7 +83,7 @@ def process_persons(chapter: {}, words: []) -> Optional[UpdateOne]:
             # print(cleansed_words)
 
         if cleansed_persons_spacy:
-            return UpdateOne({'_id': chapter['_id']}, {'$set': {'persons_spacy_cleansed': cleansed_persons_spacy}})
+            return UpdateOne({'_id': chapter['_id']}, {'$set': {'personsSpacyClean': cleansed_persons_spacy}})
         return None
     except Exception as e:
         print(e)
@@ -103,7 +102,7 @@ if __name__ == "__main__":
         print('Number of CPUs: %i' % cpu_count())
         process_count = cpu_count()
 
-        data = pd.read_csv(r'data/words_without_names_ascii.csv')
+        data = pd.read_csv(r'../token-classifier/data/words_without_names_ascii.csv')
         df = pd.DataFrame(data, columns=['word'])
         german_words = set(df['word'])
 
@@ -111,7 +110,7 @@ if __name__ == "__main__":
 
         batchsize = 10000
         for i in range(0, chapter_count, batchsize):
-            chapters = db.chapters.find({'isTagged': False}).sort([('_id', DESCENDING)]).limit(batchsize)
+            chapters = db.chapters.find({'isTagged': False}).sort([('numSentences', DESCENDING)]).limit(batchsize)
             chapter_tuples = [(chapter, german_words) for chapter in chapters]
             status_desc = 'Batch %i/%i' % (i / batchsize + 1, ceil(chapter_count / batchsize))
 
@@ -122,7 +121,7 @@ if __name__ == "__main__":
                 if results_filtered:
                     print(results_filtered)
                     db.chapters.bulk_write(results_filtered)
-    except:
-        traceback.print_exc()
+    except Exception as e:
+        print(e)
     finally:
         client.disconnect()
