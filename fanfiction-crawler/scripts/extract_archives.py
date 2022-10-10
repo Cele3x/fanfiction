@@ -9,7 +9,7 @@
 import tarfile
 import os
 import shutil
-from db_connect import DatabaseConnection
+from scripts.db_connect import DatabaseConnection
 
 INPUT_ARCHIVE_PATH_USERS = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/data/html-users-20220222_books/'
 OUTPUT_PATH_USERS = '/Users/jonathan/Documents/Studium/Master/Masterarbeit/data/html-books-extracted-users/'

@@ -13,7 +13,7 @@ from fuzzywuzzy import fuzz
 import re
 import csv
 
-load_dotenv('../.env')
+load_dotenv('../../.env')
 
 MONGO_USER = urllib.parse.quote_plus(str(os.environ.get('MONGO_USER')))
 MONGO_PW = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
