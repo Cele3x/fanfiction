@@ -22,6 +22,7 @@ def get_mongo_uri() -> Union[str, bool]:
         pw = urllib.parse.quote_plus(str(os.environ.get('MONGO_PW')))
         host = os.environ.get('MONGO_HOST')
         port = os.environ.get('MONGO_PORT')
+        print('Mongo-URI: %s@%s:%s' % (user, host, port))
         return 'mongodb://%s:%s@%s:%s' % (user, pw, host, port)
     except Exception as e:
         print(e)
