@@ -4,10 +4,14 @@
 # -----------------------------------------------------------
 
 import tensorflow as tf
+from unidecode import unidecode
+
 keras = tf.keras
 from keras.models import model_from_json
 from scripts.db_connect import DatabaseConnection
 from datetime import datetime
+
+UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}
 
 
 def load_model(json_model_path: str, weights_path: str):
@@ -27,8 +31,14 @@ def load_model(json_model_path: str, weights_path: str):
 
 def preprocess_name(name: str) -> list:
     try:
+        # replace umlauts because unidecode replaces e.g. ä to a
+        name = name.translate(UMLAUTS)
+
+        # decode characters; e.g. á => a
+        name = unidecode(name)
+
         # convert name to lowercase (as done for training)
-        name = name.lower()
+        name = name.lower().strip()
 
         # split individual characters
         name = list(name)
