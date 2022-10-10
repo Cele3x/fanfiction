@@ -141,7 +141,8 @@ class ArchiveOfOurOwnMissingSpider(CrawlSpider, ABC):
         user_profile = loader.nested_css('div.user.home.profile')
         user_profile_sel = response.css('div.user.home.profile')
         joined_on = user_profile_sel.xpath('.//dt[contains(text(), "I joined on:")]/following-sibling::dd[1]/text()').get()
-        user_profile.add_value('joinedOn', get_date(joined_on))
+        if joined_on:
+            user_profile.add_value('joinedOn', get_date(joined_on))
         user_profile.add_xpath('country', './/dt[contains(text(), "I live in:")]/following-sibling::dd[1]/text()')
         user_profile.add_css('username', 'div.primary.header.module h2.heading')
 
