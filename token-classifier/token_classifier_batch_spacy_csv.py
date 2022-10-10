@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-
 # -----------------------------------------------------------
 # Traverses through all the chapter contents and tags all
 # person names (PER) and pronouns using the NER model for
 # German with spaCy. CSV files are used as input source.
 # Results are stored as UpdateOne command in a CSV file.
+# This script processes chapters in batch mode.
 # -----------------------------------------------------------
 
 import csv
@@ -41,7 +40,7 @@ def get_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content:
         pronouns = {'er': 0, 'sie': 0, 'seiner': 0, 'ihrer': 0, 'ihm': 0, 'ihr': 0, 'ihn': 0}
 
         for sentence in doc.sents:
-            s = nlp(sentence.text)
+            s = spacy_nlp(sentence.text)
 
             # iterate over entities and store PER tags
             for entity in s.ents:
@@ -71,7 +70,7 @@ def get_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content:
                 sorted_persons[person_singular] = sorted_persons[person_singular] + sorted_persons[person]
                 del sorted_persons[person]
 
-        return UpdateOne({'_id': chapter_id, 'isTagged': {'$ne': False}}, {'$set': {'persons_spacy': sorted_persons, 'pronouns': pronouns, 'isTagged': True}})
+        return UpdateOne({'_id': chapter_id, 'isTagged': {'$ne': True}}, {'$set': {'persons_spacy': sorted_persons, 'pronouns': pronouns, 'isTagged': True}})
     except Exception as ex:
         print(ex)
         return None

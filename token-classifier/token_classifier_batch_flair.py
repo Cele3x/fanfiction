@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-
 # -----------------------------------------------------------
 # Traverses through all the chapter contents and tags all
-# person names (PER) and pronouns using the NER model for
-# German with spaCy. Results are stored in the associated
-# chapter database documents. This script uses a single
-# process approach.
+# person names (PER) using the NER model for German with
+# Flair. For pronouns extraction a spaCy language model is
+# used. Results are stored in the associated chapter database
+# documents. This script processes chapters in batch mode.
 # -----------------------------------------------------------
 
 import re
@@ -15,16 +13,21 @@ from typing import Union
 
 import spacy
 from bson import ObjectId
-from pymongo import UpdateOne, DESCENDING
+from flair.data import Sentence, DT
+from flair.models import SequenceTagger
+from flair.nn import Model
+from pymongo import UpdateOne
 from spacy import Language
 from tqdm import tqdm
 
-from db_connect import DatabaseConnection
+from scripts.db_connect import DatabaseConnection
 
 
-def get_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str) -> Union[None, UpdateOne]:
+def get_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str) -> Union[None, UpdateOne]:
     """Processes each sentence in the provided text, counting the number of 3rd person singular pronouns and person names appearing.
 
+    :param flair_tagger: Model[DT]
+        for text classification provided by flair
     :param spacy_nlp: Language
         model provided by spaCy
     :param chapter_id: ObjectId
@@ -42,11 +45,12 @@ def get_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content:
         pronouns = {'er': 0, 'sie': 0, 'seiner': 0, 'ihrer': 0, 'ihm': 0, 'ihr': 0, 'ihn': 0}
 
         for sentence in doc.sents:
-            s = nlp(sentence.text)
+            flair_sentence = Sentence(sentence.text)
+            flair_tagger.predict(flair_sentence)
 
             # iterate over entities and store PER tags
-            for entity in s.ents:
-                if entity.label_ == 'PER':
+            for entity in flair_sentence.get_spans('ner'):
+                if entity.tag == 'PER' and entity.score > 0.5:
                     # remove preceding and trailing punctuations
                     name = re.sub(r'^\W+|\W+$', '', entity.text)
                     if name in persons.keys():
@@ -74,7 +78,7 @@ def get_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content:
 
         # print(sorted_persons)
 
-        return UpdateOne({'_id': chapter_id}, {'$set': {'persons_spacy': sorted_persons, 'pronouns': pronouns, 'isTagged': True}})
+        return UpdateOne({'_id': chapter_id}, {'$set': {'persons': sorted_persons, 'pronouns': pronouns, 'isTagged': True}})
     except Exception as ex:
         print(ex)
         return None
@@ -94,27 +98,30 @@ if __name__ == "__main__":
             raise Exception('Database connection failed.')
 
         # load tagger
-        # tagger = SequenceTagger.load("flair/ner-german-large")
+        tagger = SequenceTagger.load("flair/ner-multi-fast")
         nlp = spacy.load("de_core_news_lg")
 
         chapter_count = db.chapters.count_documents({'isTagged': {'$ne': True}})
         print('Chapters: %i' % chapter_count)
 
-        batchsize = 1000
+        batchsize = 50
         for i in range(0, chapter_count, batchsize):
             batch_start_time = datetime.now()
             db_updates = []
-            chapters = db.chapters.find({'isTagged': {'$ne': True}}).sort([('_id', DESCENDING)]).limit(batchsize)
+            chapters = db.chapters.find({'isTagged': {'$ne': True}}, no_cursor_timeout=True).limit(batchsize)
             with tqdm(total=batchsize) as pbar:
-                pbar.set_description('Batch %i/%i' % (i / batchsize + 1, ceil(chapter_count / batchsize)))
+                batch_current = i / batchsize + 1
+                batch_total = ceil(chapter_count / batchsize)
                 for chapter in chapters:
-                    update = get_chapter_tags(nlp, chapter['_id'], chapter['content'])
+                    pbar.set_description('Batch %i/%i - Chunk %i' % (batch_current, batch_total, chapter['chunk']))
+                    update = get_chapter_tags(tagger, nlp, chapter['_id'], chapter['content'])
                     if update:
                         db_updates.append(update)
                     pbar.update(1)
 
             print('%s - Bulk writing %d updates to database' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_updates)))
             db.chapters.bulk_write(db_updates)
+            chapters.close()
 
             processing_time = (datetime.now() - batch_start_time).seconds
             processing_time_per_chapter = processing_time / batchsize
