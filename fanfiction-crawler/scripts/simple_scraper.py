@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+# -----------------------------------------------------------
+# Simple scraper using BeautifulSoup for filling smaller
+# data gaps in previously crawled data.
+# -----------------------------------------------------------
+
 from bs4 import BeautifulSoup
 from datetime import datetime
 from scripts.db_connect import DatabaseConnection
