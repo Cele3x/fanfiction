@@ -6,7 +6,7 @@
 import fnmatch
 from typing import Optional
 
-from scripts.db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 from datetime import datetime
 import re
 from unidecode import unidecode

@@ -7,7 +7,7 @@
 
 from bs4 import BeautifulSoup
 from datetime import datetime
-from scripts.db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 from time import sleep
 from w3lib.html import replace_escape_chars
 import re

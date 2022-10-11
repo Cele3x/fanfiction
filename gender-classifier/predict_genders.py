@@ -8,7 +8,7 @@ from unidecode import unidecode
 
 keras = tf.keras
 from keras.models import model_from_json
-from scripts.db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 from datetime import datetime
 
 UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}

@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # -----------------------------------------------------------
 # Provides functions for connecting to and disconnecting from
 # a MongoDB database while using environment specific

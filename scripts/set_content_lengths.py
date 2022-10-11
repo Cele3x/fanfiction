@@ -13,10 +13,10 @@ from spacy import Language
 from tqdm import tqdm
 import re
 import spacy
-from db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 from multiprocessing import Pool, cpu_count, freeze_support
 from math import ceil
-from typing import Optional, Union
+from typing import Union
 
 
 def count_chapter_items(nlp: Language, chapter_id: ObjectId, text: str) -> Union[None, UpdateOne]:

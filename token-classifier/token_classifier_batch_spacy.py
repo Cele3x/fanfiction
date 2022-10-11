@@ -17,7 +17,7 @@ from pymongo import UpdateOne, DESCENDING
 from spacy import Language
 from tqdm import tqdm
 
-from scripts.db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 
 
 def get_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str) -> Union[None, UpdateOne]:

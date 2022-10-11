@@ -16,8 +16,7 @@ from flair.data import Sentence, DT
 from flair.models import SequenceTagger
 from flair.nn import Model
 from spacy import Language
-
-from scripts.db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 
 
 def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str):
@@ -93,12 +92,12 @@ if __name__ == "__main__":
         tagger = SequenceTagger.load("flair/ner-multi-fast")
         nlp = spacy.load("de_core_news_lg")
 
-        chapter_count = db.chapters.count_documents({'isTagged': {'$ne': True}})
+        chapter_count = db.chapters.count_documents({'isTagged': False})
         print('Chapters: %i' % chapter_count)
 
         while True:
             start_time = datetime.now()
-            chapter = db.chapters.find_one_and_update({'isTagged': False, 'isLocked': {'$ne': True}}, {'$set': {'isLocked': True}})
+            chapter = db.chapters.find_one_and_update({'isTagged': False, 'isLocked': {'$ne': True}}, {'$set': {'isLocked': True}})  # sort=[('numSentences', ASCENDING)]
             if chapter is None:
                 break
 

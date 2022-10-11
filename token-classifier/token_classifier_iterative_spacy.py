@@ -13,7 +13,7 @@ import spacy
 from bson import ObjectId
 from spacy import Language
 
-from scripts.db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 
 
 def set_chapter_tags(spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str):

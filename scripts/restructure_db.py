@@ -9,7 +9,7 @@
 
 from pymongo import IndexModel, ASCENDING
 from tqdm import tqdm
-from db_connect import DatabaseConnection
+from utils.db_connect import DatabaseConnection
 
 client = DatabaseConnection()
 db = client.connect('FanFiction')
