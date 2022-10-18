@@ -1,25 +1,28 @@
 # -----------------------------------------------------------
-# Traverses through all the chapter contents and tags all
-# person names (PER) using the NER model for German with
-# Flair. For pronouns extraction a spaCy language model is
-# used. Results are stored in the associated chapter database
-# documents. This script processes chapters in iterative
-# mode for being able to lock processed document.
+# Traverses through the chapter contents in a random order
+# and tags all person names (PER) using the NER model for
+# German with Flair. For pronouns extraction a spaCy language
+# model is used. Results are stored in the associated chapter
+# database documents. This script processes chapters in
+# iterative mode for being able to lock processed document.
 # -----------------------------------------------------------
 
 import re
 from datetime import datetime
-
 import spacy
 from bson import ObjectId
+from spacy import Language
+from pymongo import UpdateOne
 from flair.data import Sentence, DT
 from flair.models import SequenceTagger
 from flair.nn import Model
-from spacy import Language
+import os
+from typing import Optional
+from random import choice
 from utils.db_connect import DatabaseConnection
 
 
-def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str):
+def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str) -> Optional[UpdateOne]:
     """Processes each sentence in the provided text, counting the number of 3rd person singular pronouns and person names appearing.
 
     :param flair_tagger: Model[DT]
@@ -36,10 +39,9 @@ def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: O
 
         # init result variables
         persons = {}
-        pronouns = {'er': 0, 'sie': 0, 'seiner': 0, 'ihrer': 0, 'ihm': 0, 'ihr': 0, 'ihn': 0}
 
         for sentence in doc.sents:
-            flair_sentence = Sentence(sentence.text)
+            flair_sentence = Sentence(text=sentence.text, language_code='de')
             flair_tagger.predict(flair_sentence)
 
             # iterate over entities and store PER tags
@@ -52,16 +54,6 @@ def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: O
                     else:
                         persons[name] = 1
 
-            # iterate over each word and store PRON tags
-            for item in sentence:
-                m_result = item.morph
-                pron_type = m_result.get('PronType')
-                person = m_result.get('Person')
-                number = m_result.get('Number')
-                text_lower = item.text.lower()
-                if pron_type == ['Prs'] and number == ['Sing'] and person == ['3'] and text_lower in pronouns.keys():
-                    pronouns[text_lower] = pronouns[text_lower] + 1
-
         # sort persons and merge where possible
         sorted_persons = dict(sorted(persons.items(), key=lambda x: x[1], reverse=True))
         for person in list(sorted_persons):
@@ -70,19 +62,25 @@ def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: O
                 sorted_persons[person_singular] = sorted_persons[person_singular] + sorted_persons[person]
                 del sorted_persons[person]
 
-        db.chapters.update_one({'_id': chapter_id}, {'$set': {'persons': sorted_persons, 'pronouns': pronouns, 'isTagged': True, 'isLocked': False}})
+        return UpdateOne({'_id': chapter_id}, {'$set': {'persons': sorted_persons, 'isTagged': True, 'isLocked': False}})
     except Exception as ex:
         print(ex)
 
 
+def write_to_database(updates: list, process_id: int, current_index: int):
+    try:
+        print('[%i - %i] %s --- Bulk writing %d updates to database' % (process_id, current_index, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(updates)))
+        db.chapters.bulk_write(updates)
+    except Exception as ex:
+        print(ex)
+        print(updates)
+
+
 if __name__ == "__main__":
     client = DatabaseConnection()
-    db_updates = []
-    db = None
     try:
-        print('%s - Start processing with Flair...' % '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()))
-        avg_processing_time = 0
-        processing_times = []
+        pid = os.getpid()
+        print('[%i] %s --- Start processing with flairNLP...' % (pid, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())))
 
         db = client.connect('FanFiction')
         if db is None:
@@ -91,19 +89,37 @@ if __name__ == "__main__":
         # load tagger
         tagger = SequenceTagger.load("flair/ner-multi-fast")
         nlp = spacy.load("de_core_news_lg")
+        print('[%i] %s --- Loaded flairNLP and spaCy models' % (pid, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())))
 
-        chapter_count = db.chapters.count_documents({'isTagged': False})
-        print('Chapters: %i' % chapter_count)
-
+        i = 0
+        db_updates = []
+        open_chunks = list(range(1, 196))
+        chunk = 0
         while True:
+            i = i + 1
             start_time = datetime.now()
-            chapter = db.chapters.find_one_and_update({'isTagged': False, 'isLocked': {'$ne': True}}, {'$set': {'isLocked': True}})  # sort=[('numSentences', ASCENDING)]
-            if chapter is None:
+            if not open_chunks:
+                write_to_database(db_updates, pid, i)
                 break
 
-            print('[F] %s --- Chapter %s - Chunk %i...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), chapter['_id'], chapter['chunk']), end=' ', flush=True)
-            set_chapter_tags(tagger, nlp, chapter['_id'], chapter['content'])
-            print('DONE [%is]' % (datetime.now() - start_time).seconds)
+            chunk = choice(open_chunks)
+            chapter = db.chapters.find_one_and_update({'isTagged': False, 'isLocked': False, 'chunk': chunk}, {'$set': {'isLocked': True}})
+            if chapter is None:
+                print('[%i - %i] %s --- Chunk %i processed - %i remaining' % (pid, i, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), chunk, len(open_chunks)))
+                if chunk in open_chunks:
+                    open_chunks.remove(chunk)
+                continue
+
+            update = set_chapter_tags(tagger, nlp, chapter['_id'], chapter['content'])
+            if update:
+                db_updates.append(update)
+            elapsed = (datetime.now() - start_time).total_seconds()
+            print('[%i - %i] %s --- Chapter %s - Chunk %i... DONE [%0.2fs]' % (pid, i, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), chapter['_id'], chapter['chunk'], elapsed), flush=True)
+
+            if i % 50 == 0:
+                write_to_database(db_updates, pid, i)
+                db_updates = []
+        print('[%i] %s --- Finished after %i iterations' % (pid, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), i))
     except Exception as e:
         print(e)
     finally:
