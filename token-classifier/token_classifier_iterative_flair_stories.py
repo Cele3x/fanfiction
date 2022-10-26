@@ -66,7 +66,7 @@ def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: O
 
         chapter_elapsed = (datetime.now() - chapter_start).total_seconds()
 
-        return UpdateOne({'_id': chapter_id}, {'$set': {'persons': sorted_persons, 'isTagged': True, 'isLocked': False, 'processingTime': chapter_elapsed}})
+        return UpdateOne({'_id': chapter_id}, {'$set': {'persons': sorted_persons, 'isTagged': True, 'isLocked': False, 'processingTime': chapter_elapsed, 'processedBy': 'M1'}})
     except Exception as ex:
         print(ex)
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
                 write_to_database(session, db_updates, pid, i)
                 elapsed = (datetime.now() - start_time).total_seconds()
-                db.stories.update_one({'_id': story['_id']}, {'$set': {'isTaggedPartially': False, 'isLocked': False, 'isTagged': True, 'processingTime': elapsed}}, session=session)
+                db.stories.update_one({'_id': story['_id']}, {'$set': {'isTaggedPartially': False, 'isLocked': False, 'isTagged': True, 'processingTime': elapsed, 'processedBy': 'M1'}}, session=session)
 
                 print('[%i - %i] %s --- Story %s... DONE [%0.2fs]' % (pid, i, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), story['_id'], elapsed), flush=True)
 
