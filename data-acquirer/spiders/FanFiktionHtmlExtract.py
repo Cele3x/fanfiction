@@ -1,10 +1,10 @@
 import re
 import os
 import csv
-from fanfiction.settings import MONGO_URI, MONGO_DB, EXTRACTED_STORIES_PATH, EXTRACTED_USERS_PATH, EXTRACTED_REVIEWS_PATH, CSV_STORIES_PATH, CSV_USERS_PATH, CSV_REVIEWS_PATH
+from ..settings import MONGO_URI, MONGO_DB, EXTRACTED_STORIES_PATH, EXTRACTED_USERS_PATH, EXTRACTED_REVIEWS_PATH, CSV_STORIES_PATH, CSV_USERS_PATH, CSV_REVIEWS_PATH
 from pymongo import MongoClient
 from abc import ABC
-from fanfiction.utilities import get_datetime, get_date, str_to_int
+from ..utilities import get_datetime, get_date, str_to_int
 from tqdm import tqdm
 
 from scrapy.http import Request
@@ -15,7 +15,7 @@ from scrapy.spiders import CrawlSpider
 
 from w3lib.html import replace_tags, replace_escape_chars
 
-from fanfiction.items import Story, Chapter, User, Review
+from ..items import Story, Chapter, User, Review
 
 
 def find_story_definitions(text: str) -> list:

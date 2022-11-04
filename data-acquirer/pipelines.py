@@ -11,8 +11,8 @@ from bson import ObjectId
 from itemadapter import ItemAdapter
 from scrapy import Spider
 
-from fanfiction.items import User, Story, Chapter, Review
-from fanfiction.utilities import merge_dict, str_to_int
+from items import User, Story, Chapter, Review
+from utilities import merge_dict, str_to_int
 
 
 class FanfictionPipeline:

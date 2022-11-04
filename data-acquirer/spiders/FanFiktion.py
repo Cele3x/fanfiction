@@ -2,11 +2,11 @@ import re
 
 from scrapy.exceptions import CloseSpider
 
-from fanfiction.settings import MONGO_URI, MONGO_DB
+from ..settings import MONGO_URI, MONGO_DB
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from abc import ABC
-from fanfiction.utilities import get_datetime, get_date, str_to_int
+from ..utilities import get_datetime, get_date, str_to_int
 
 from scrapy.http import Request
 from scrapy import signals
@@ -17,7 +17,7 @@ from scrapy.spiders import CrawlSpider, Rule
 
 from w3lib.html import replace_tags, replace_escape_chars
 
-from fanfiction.items import Story, Chapter, User, Review
+from ..items import Story, Chapter, User, Review
 
 
 def find_story_definitions(text: str) -> list:

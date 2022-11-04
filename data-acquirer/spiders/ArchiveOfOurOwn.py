@@ -3,11 +3,11 @@ import sys
 from scrapy.exceptions import CloseSpider
 from typing import Union
 
-from fanfiction.settings import MONGO_URI, MONGO_DB
+from ..settings import MONGO_URI, MONGO_DB
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from abc import ABC
-from fanfiction.utilities import get_datetime, get_date, str_to_int
+from ..utilities import get_datetime, get_date, str_to_int
 from scrapy.http import Request
 from scrapy import signals
 from pydispatch import dispatcher
@@ -15,7 +15,7 @@ from scrapy.linkextractors import LinkExtractor
 from scrapy.loader import ItemLoader
 from scrapy.spiders import CrawlSpider, Rule
 from w3lib.html import replace_tags, replace_escape_chars
-from fanfiction.items import Story, Chapter, User, Review
+from ..items import Story, Chapter, User, Review
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
