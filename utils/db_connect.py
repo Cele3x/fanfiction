@@ -11,6 +11,7 @@ import pymongo
 from dotenv import load_dotenv
 import urllib.parse
 from pymongo.database import Database
+from pymongo.client_session import ClientSession
 
 
 def get_mongo_uri() -> Union[str, bool]:
@@ -32,11 +33,13 @@ class DatabaseConnection:
     def __init__(self):
         self.uri = get_mongo_uri()
         self.client = None
+        self.database = None
 
     def connect(self, database_name: str) -> Union[Database, bool]:
         try:
             self.client = pymongo.MongoClient(self.uri)
-            return self.client[database_name]
+            self.database = self.client[database_name]
+            return self.database
         except Exception as e:
             print(e)
             return False
@@ -48,3 +51,15 @@ class DatabaseConnection:
         except Exception as e:
             print(e)
             return False
+
+    def start_session(self) -> ClientSession:
+        try:
+            return self.client.start_session()
+        except Exception as e:
+            print(e)
+
+    def refresh_session(self, session_id: [str, any]):
+        try:
+            self.client.admin.command({'refreshSessions': [session_id]})
+        except Exception as e:
+            print(e)
