@@ -7,20 +7,20 @@
 # mode for being able to lock processed document.
 # -----------------------------------------------------------
 
+import os
 import re
-from datetime import datetime
 import spacy
+import random
+from datetime import datetime
 from bson import ObjectId
 from pymongo.client_session import ClientSession
 from spacy import Language
-import pymongo
-import urllib.parse
 from pymongo import UpdateOne
 from flair.data import Sentence, DT
 from flair.models import SequenceTagger
 from flair.nn import Model
-import os
 from typing import Optional
+from utils.db_connect import DatabaseConnection
 
 
 def set_chapter_tags(flair_tagger: Model[DT], spacy_nlp: Language, chapter_id: ObjectId, chapter_content: str) -> Optional[UpdateOne]:
@@ -81,14 +81,13 @@ def write_to_database(db_session: ClientSession, updates: list, process_id: int,
 
 
 if __name__ == "__main__":
-    uri = 'mongodb://%s:%s@%s:%s' % (urllib.parse.quote_plus('jonathan'), urllib.parse.quote_plus('Z#0%H*c0%0#4rK!9CU'), 'liquid-vanilla.com', '27017')
-    client = pymongo.MongoClient(uri)
+    client = DatabaseConnection()
     db_updates = []
     try:
         pid = os.getpid()
         print('[%i] %s --- Start processing with flairNLP...' % (pid, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())))
 
-        db = client['FanFiction']
+        db = client.connect('FanFiction')
         if db is None:
             raise Exception('Database connection failed.')
 
@@ -97,16 +96,22 @@ if __name__ == "__main__":
         nlp = spacy.load("de_core_news_lg")
         print('[%i] %s --- Loaded flairNLP and spaCy models' % (pid, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())))
 
+        open_story_ids = db.stories.find({'isTagged': False, 'isLocked': False}).distinct('_id')
+        print('[%i] %s --- Found %d open stories' % (pid, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(open_story_ids)))
+
         with client.start_session() as session:
             i = 0
-            while True:
+            while open_story_ids:
                 i = i + 1
                 start_time = datetime.now()
                 refresh_time = datetime.now()
 
-                story = db.stories.find_one_and_update({'isTaggedPartially': True, 'isLocked': False}, {'$set': {'isLocked': True}}, session=session)
+                # get random story, remove from list and lock
+                random_story_id = random.choice(open_story_ids)
+                open_story_ids.remove(random_story_id)
+                story = db.stories.find_one_and_update({'_id': random_story_id, 'isTagged': False, 'isLocked': False}, {'$set': {'isLocked': True}}, session=session)
                 if story is None:
-                    break
+                    continue
 
                 print('[%i - %i] %s --- Story %s...' % (pid, i, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), story['_id']), flush=True)
 
@@ -115,7 +120,7 @@ if __name__ == "__main__":
                 for chapter in chapters:
                     if (datetime.now() - refresh_time).seconds > 600:
                         print('[%i - %i] %s --- Refreshing session' % (pid, i, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())), flush=True)
-                        client.admin.command({'refreshSessions': [session.session_id]})
+                        client.refresh_session(session.session_id)
                         refresh_time = datetime.now()
 
                     print('[%i - %i] %s --- > Chapter %s...' % (pid, i, '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), chapter['_id']), end=' ', flush=True)
@@ -135,4 +140,4 @@ if __name__ == "__main__":
         print(e)
         print('UPDATES: %s' % db_updates)
     finally:
-        client.close()
+        client.disconnect()
