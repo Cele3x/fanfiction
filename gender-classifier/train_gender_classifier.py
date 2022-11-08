@@ -66,7 +66,7 @@ def preprocess(names_df, train=True):
 if __name__ == '__main__':
     print('%s - Start processing...' % '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()))
 
-    df = pd.read_csv('data/uniq_names_bi_ascii_v2.csv')
+    df = pd.read_csv('data/names_binary_ascii.csv')
     print(df.shape)
     df.head()
 
