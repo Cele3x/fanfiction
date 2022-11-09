@@ -47,14 +47,14 @@ def preprocess(names_df, train=True):
     names_df['name'] = names_df['name'].str.lower()
 
     # split names into characters
-    names_df['name'] = [list(name) for name in names_df['name']]
+    names_df['name'] = names_df['name'].apply(lambda x: list(x))
 
     # pad names to 50 characters
     name_length = 50
     names_df['name'] = [(name + [' '] * name_length)[:name_length] for name in names_df['name']]
 
     # encode characters
-    names_df['name'] = [[max(0.0, ord(char) - 96.0) for char in name]for name in names_df['name']]
+    names_df['name'] = [[max(0.0, ord(char) - 96.0) for char in name] for name in names_df['name']]
 
     if train:
         # one-hot encode genders (F: 0.0, M: 1.0)
