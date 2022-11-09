@@ -16,9 +16,6 @@ if __name__ == '__main__':
     if db is None:
         raise Exception('Database connection failed.')
     try:
-        # df = pd.read_csv('data/character_names.csv')
-        # df.head()
-
         names = set()
 
         with client.start_session() as session:
