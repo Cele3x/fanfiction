@@ -11,6 +11,7 @@ from datetime import datetime
 from pymongo import UpdateOne
 import timeit
 
+
 if __name__ == '__main__':
     client = DatabaseConnection()
     try:
@@ -127,6 +128,11 @@ if __name__ == '__main__':
                         print('%s - Updating %d stories...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_story_updates)))
                         db.stories.bulk_write(db_story_updates)
                         db_story_updates = []
+
+            print('%s - Updating %d chapters...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_chapter_updates)))
+            db.chapters.bulk_write(db_chapter_updates)
+            print('%s - Updating %d stories...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_story_updates)))
+            db.stories.bulk_write(db_story_updates)
     except Exception as e:
         print(e)
     finally:
