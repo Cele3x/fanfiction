@@ -4,10 +4,12 @@
 # -----------------------------------------------------------
 
 import pandas as pd
+import pymongo
 from tqdm import tqdm
 from utils.db_connect import DatabaseConnection
 from datetime import datetime
 from pymongo import UpdateOne
+import timeit
 
 if __name__ == '__main__':
     client = DatabaseConnection()
@@ -25,14 +27,15 @@ if __name__ == '__main__':
 
             # find tagged persons
             story_query = {'isTagged': True, 'isPredicted': False}
-            stories = db.stories.find(story_query, session=session, no_cursor_timeout=True)
+            stories = db.stories.find(story_query, session=session, no_cursor_timeout=True).sort('_id', pymongo.DESCENDING)
             num_stories = db.stories.count_documents(story_query)
+
+            # initialize update containers
+            db_chapter_updates = []
+            db_story_updates = []
 
             for index, story in enumerate(stories):
                 print('\n%s - Processing story %d of %d...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), index + 1, num_stories))
-
-                # initialize update container
-                db_updates = []
 
                 # initialize counters
                 story_females = 0
@@ -53,13 +56,12 @@ if __name__ == '__main__':
 
                         for name, occurrences in chapter['persons'].items():
                             # find name in dataframe
-                            df_slice = df.loc[df['name'] == name]
-                            if df_slice.empty:
+                            if name not in df.index:
                                 print('Name "%s" not found in dataframe.' % name)
                                 continue
 
-                            # get first row
-                            row = df_slice.iloc[0]
+                            # get row
+                            row = df.loc[name]
 
                             # count only with high probability
                             if row['gender'] and row['probability'] and row['probability'] > 0.8:
@@ -95,7 +97,7 @@ if __name__ == '__main__':
 
                         # if db.chapters.update_one({'_id': chapter['_id']}, {'$set': {'personGenders': person_genders}}):
                         # print('Updated %s with personGender: %s' % (chapter['_id'], person_genders))
-                        db_updates.append(UpdateOne({'_id': chapter['_id']}, {'$set': {'personGenders': person_genders}}))
+                        db_chapter_updates.append(UpdateOne({'_id': chapter['_id']}, {'$set': {'personGenders': person_genders}}))
                         pbar.update(1)
 
                 # calculate story statistics
@@ -108,16 +110,23 @@ if __name__ == '__main__':
                 story_person_genders = {'females': story_females, 'males': story_males, 'indecisives': story_indecisives, 'ratio': story_ratio,
                                         'decisivePct': story_decisive_percentage, 'femalePct': story_female_percentage, 'malePct': story_male_percentage}
 
-                # bulk write chapter updates
-                if db_updates:
-                    print('%s - Updating %d chapters...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_updates)))
-                    db.chapters.bulk_write(db_updates)
+                db_story_updates.append(UpdateOne({'_id': story['_id']}, {'$set': {'isPredicted': True, 'personGenders': story_person_genders}}))
 
-                db.stories.update_one({'_id': story['_id']}, {'$set': {'isPredicted': True, 'personGenders': story_person_genders}})
-
-                # refresh every 1000 stories the session
-                if index % 1000 == 0:
+                # refresh every 5000 stories the session
+                if index % 5000 == 0:
                     client.refresh_session(session.session_id)
+
+                    # bulk write chapter updates
+                    if db_chapter_updates:
+                        print('%s - Updating %d chapters...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_chapter_updates)))
+                        db.chapters.bulk_write(db_chapter_updates)
+                        db_chapter_updates = []
+
+                    # bulk write story updates
+                    if db_story_updates:
+                        print('%s - Updating %d stories...' % ('{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()), len(db_story_updates)))
+                        db.stories.bulk_write(db_story_updates)
+                        db_story_updates = []
     except Exception as e:
         print(e)
     finally:
