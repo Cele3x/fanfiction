@@ -13,6 +13,7 @@ from utils.db_connect import DatabaseConnection
 from datetime import datetime
 from pymongo import UpdateOne
 import tensorflow as tf
+import re
 keras = tf.keras
 from keras.models import model_from_json
 # from keras.models import load_model
@@ -121,6 +122,7 @@ if __name__ == '__main__':
                         indecisives = 0
 
                         persons = list(chapter['persons'].keys())
+                        persons = [person for person in persons if '~' not in person]
                         prev_df = df.loc[df['name'].isin(persons)]
 
                         # process only new names
