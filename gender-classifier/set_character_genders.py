@@ -19,7 +19,7 @@ if __name__ == '__main__':
             raise Exception('Database connection failed.')
 
         # load dataframe with names
-        df = pd.read_csv('data/character_names_predicted.csv')
+        df = pd.read_csv('data/character_names_predicted.csv', usecols=['name', 'gender', 'probability'], dtype={'name': str, 'gender': str, 'probability': float})
 
         with client.start_session() as session:
 
