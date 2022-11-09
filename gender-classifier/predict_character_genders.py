@@ -124,6 +124,9 @@ if __name__ == '__main__':
                 df_chunk = predict_genders(model, df_chunk)
                 df = pd.concat([df, df_chunk], ignore_index=True)
 
+        df = df.drop_duplicates(subset='name', keep='first')
+        df = df.sort_values(by=['name'])
+        df = df.reset_index(drop=True)
         df.to_csv('data/character_names_predicted.csv', index=False)
 
     except Exception as e:
