@@ -4,18 +4,15 @@
 
 import pandas as pd
 import numpy as np
-from numpy import ndarray
 from pandas import DataFrame
 from tqdm import tqdm
 from unidecode import unidecode
-from utils.db_connect import DatabaseConnection
 from datetime import datetime
-from pymongo import UpdateOne
 import tensorflow as tf
-import re
+
+# fix for apple m1
 keras = tf.keras
 from keras.models import model_from_json
-# from keras.models import load_model
 
 UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}
 
@@ -39,11 +36,9 @@ def preprocess_names(names_df: DataFrame, first_names: bool = False) -> DataFram
     try:
         # replace umlauts because unidecode replaces e.g. ä to a
         names_df['preprocessed'] = names_df['name'].str.translate(UMLAUTS)
-        # names_df['preprocessed'] = [name.translate(UMLAUTS) for name in names_df['name']]
 
         # decode characters; e.g. á => a
         names_df['preprocessed'] = names_df['preprocessed'].apply(unidecode)
-        # names_df['preprocessed'] = [unidecode(name) for name in names_df['preprocessed']]
 
         # convert name to lowercase (as done for training)
         names_df['preprocessed'] = names_df['preprocessed'].str.lower()
@@ -59,7 +54,6 @@ def preprocess_names(names_df: DataFrame, first_names: bool = False) -> DataFram
             names_df['preprocessed'] = names_df['preprocessed'].str.split().str[0]
 
         # split individual characters
-        # names_df['preprocessed'] = [list(name) for name in names_df['preprocessed']]
         names_df['preprocessed'] = names_df['preprocessed'].apply(lambda x: list(x))
 
         # pad names with spaces to make all names same length
@@ -107,24 +101,26 @@ if __name__ == '__main__':
         # get names that are not yet predicted
         df_unpredicted = df[df['gender'].isnull()]
 
+        # remove names with null values
+        df_unpredicted = df_unpredicted[df_unpredicted['name'].notnull()]
+
         # predict names in chunks
-        chunk_size = 10000
-        with tqdm(total=chunk_size) as pbar:
-            for df_chunk in np.array_split(df_unpredicted, chunk_size):
+        sections = 100
+        with tqdm(total=sections) as pbar:
+            for df_chunk in np.array_split(df_unpredicted, sections):
                 df_chunk = preprocess_names(df_chunk)
                 df_chunk = predict_genders(model, df_chunk)
                 df = pd.concat([df, df_chunk], ignore_index=True)
                 pbar.update(1)
 
         # additional predictions for names that have a low probability
-        # TODO: maybe filter for names containing spaces
         df_low_probability = df[df['probability'] < 0.8]
 
         # predict names in chunks
-        chunk_size = 10000
-        with tqdm(total=chunk_size) as pbar:
-            for df_chunk in np.array_split(df_low_probability, chunk_size):
-                df_chunk = preprocess_names(df_chunk)
+        sections = 20
+        with tqdm(total=sections) as pbar:
+            for df_chunk in np.array_split(df_low_probability, sections):
+                df_chunk = preprocess_names(df_chunk, first_names=True)
                 df_chunk = predict_genders(model, df_chunk)
                 df = pd.concat([df, df_chunk], ignore_index=True)
 
