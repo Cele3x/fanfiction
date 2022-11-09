@@ -35,22 +35,32 @@ def load_model(json_model_path: str, weights_path: str):
         print(ex)
 
 
-def preprocess_names(names_df: DataFrame) -> DataFrame:
+def preprocess_names(names_df: DataFrame, first_names: bool = False) -> DataFrame:
     try:
         # replace umlauts because unidecode replaces e.g. ä to a
-        names_df['preprocessed'] = [name.translate(UMLAUTS) for name in names_df['name']]
+        names_df['preprocessed'] = names_df['name'].str.translate(UMLAUTS)
+        # names_df['preprocessed'] = [name.translate(UMLAUTS) for name in names_df['name']]
 
         # decode characters; e.g. á => a
-        names_df['preprocessed'] = [unidecode(name) for name in names_df['preprocessed']]
+        names_df['preprocessed'] = names_df['preprocessed'].apply(unidecode)
+        # names_df['preprocessed'] = [unidecode(name) for name in names_df['preprocessed']]
 
         # convert name to lowercase (as done for training)
         names_df['preprocessed'] = names_df['preprocessed'].str.lower()
 
+        # remove all non-alphabetic characters
+        names_df['preprocessed'] = names_df['preprocessed'].str.replace(r'[^\w\s]', '', regex=True)
+
         # strip whitespaces
-        names_df['preprocessed'] = [name.strip() for name in names_df['preprocessed']]
+        names_df['preprocessed'] = names_df['preprocessed'].str.strip()
+
+        # get first names only
+        if first_names:
+            names_df['preprocessed'] = names_df['preprocessed'].str.split().str[0]
 
         # split individual characters
-        names_df['preprocessed'] = [list(name) for name in names_df['preprocessed']]
+        # names_df['preprocessed'] = [list(name) for name in names_df['preprocessed']]
+        names_df['preprocessed'] = names_df['preprocessed'].apply(lambda x: list(x))
 
         # pad names with spaces to make all names same length
         name_length = 50
