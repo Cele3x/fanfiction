@@ -1,7 +1,18 @@
-venv
-.env
+# JetBrains configuration directory
 .idea
-crawls
+
+# environmental variables
+.env
+
+# temporary files
+tmp
+
+# log files
 logs
-pages
-htmls
+*.log
+
+# scrapy stuff:
+data-acquisition/crawls
+*.queue
+*.seen
+*.state
