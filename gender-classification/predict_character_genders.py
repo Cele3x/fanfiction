@@ -85,24 +85,25 @@ if __name__ == '__main__':
         # load serialized model with weights
         model = load_model('data/gender_classifier.json', 'data/gender_classifier.h5')
 
-        # read names from training data
+        # read names from training data, drop empty names and set probability to 1.0
         df_names_train = pd.read_csv('data/names_binary_ascii.csv')
+        df_names_train.dropna(subset=['name'], inplace=True)
+        df_names_train['name'] = df_names_train['name'].str.lower()
         df_names_train['probability'] = 1.0
 
-        # read names from fanfiction corpus
+        # read names from fanfiction corpus, drop empty names and set probability to 0.0
         df_names_corpus = pd.read_csv('data/character_names.csv')
+        df_names_corpus.dropna(subset=['name'], inplace=True)
+        df_names_corpus['probability'] = 0.0
 
         # merge names from training data and fanfiction corpus
         df = pd.concat([df_names_train, df_names_corpus], ignore_index=True)
 
-        # remove duplicate names
+        # remove duplicate names and keep the one from the training data
         df.drop_duplicates(subset='name', keep='first', inplace=True)
 
         # get names that are not yet predicted
         df_unpredicted = df[df['gender'].isnull()]
-
-        # remove names with null values
-        df_unpredicted = df_unpredicted[df_unpredicted['name'].notnull()]
 
         # predict names in chunks
         sections = 100
@@ -110,11 +111,15 @@ if __name__ == '__main__':
             for df_chunk in np.array_split(df_unpredicted, sections):
                 df_chunk = preprocess_names(df_chunk)
                 df_chunk = predict_genders(model, df_chunk)
+
+                # remove preprocessed column
+                df_chunk.drop(columns=['preprocessed'], inplace=True)
+
                 df = pd.concat([df, df_chunk], ignore_index=True)
                 pbar.update(1)
 
-        # additional predictions for names that have a low probability
-        df_low_probability = df[df['probability'] < 0.8]
+        # additional predictions for names that have a low probability and contain spaces for potential first names
+        df_low_probability = df[(df['probability'] < 0.8) & (df['name'].str.contains(r'\s', regex=True))]
 
         # predict names in chunks
         sections = 20
@@ -123,6 +128,7 @@ if __name__ == '__main__':
                 df_chunk = preprocess_names(df_chunk, first_names=True)
                 df_chunk = predict_genders(model, df_chunk)
                 df = pd.concat([df, df_chunk], ignore_index=True)
+                pbar.update(1)
 
         df = df.drop_duplicates(subset='name', keep='first')
         df = df.sort_values(by=['name'])
