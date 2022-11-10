@@ -102,7 +102,7 @@ if __name__ == "__main__":
         print('Number of CPUs: %i' % cpu_count())
         process_count = cpu_count()
 
-        data = pd.read_csv(r'../token-classifier/data/words_without_names_ascii.csv')
+        data = pd.read_csv(r'/data/words_without_names_ascii.csv')
         df = pd.DataFrame(data, columns=['word'])
         german_words = set(df['word'])
 
