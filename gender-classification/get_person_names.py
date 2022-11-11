@@ -1,5 +1,5 @@
 # -----------------------------------------------------------
-# Generate a list containing all unique character names from
+# Generate a list containing all unique person names from
 # the corpus.
 # -----------------------------------------------------------
 
@@ -17,23 +17,24 @@ if __name__ == '__main__':
     if db is None:
         raise Exception('Database connection failed.')
     try:
-        names = set()
+        persons = set()
 
         with client.start_session() as session:
-            chapter_count = db.chapters.count_documents({'isTagged': True})
-            chapters = db.chapters.find({'isTagged': True}, {'cleansedNames': 1}, session=session, no_cursor_timeout=True)
-            with tqdm(total=chapter_count) as pbar:
-                for chapter in chapters:
-                    for name in chapter['cleansedNames']:
-                        names.add(name)
+            query = {'isTagged': True, 'persons': {'$exists': True}}
+            stories = db.stories.find(query, {'persons': 1}, session=session, no_cursor_timeout=True)
+            story_count = db.stories.count_documents(query)
+            with tqdm(total=story_count) as pbar:
+                for story in stories:
+                    for person in story['persons']:
+                        persons.add(person)
                     pbar.update(1)
 
-        print('Writing %i names to file...' % len(names))
+        print('Writing %i names to file...' % len(persons))
         with open('data/character_names.csv', 'w') as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(['name', 'gender', 'probability'])
-            for name in names:
-                writer.writerow([name, '', 0.0])
+            for person in sorted(persons):
+                writer.writerow([person, '', 0.0])
 
     except Exception as e:
         print(e)
