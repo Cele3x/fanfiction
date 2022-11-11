@@ -9,10 +9,11 @@ from tqdm import tqdm
 from unidecode import unidecode
 from datetime import datetime
 import tensorflow as tf
+import traceback
 
 # fix for apple m1
 keras = tf.keras
-from keras.models import model_from_json
+# from keras.models import model_from_json
 
 UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}
 
@@ -30,6 +31,7 @@ def load_model(json_model_path: str, weights_path: str):
         return loaded_model
     except Exception as ex:
         print(ex)
+        print(traceback.format_exc())
 
 
 def preprocess_names(names_df: DataFrame, first_names: bool = False) -> DataFrame:
@@ -66,6 +68,7 @@ def preprocess_names(names_df: DataFrame, first_names: bool = False) -> DataFram
         return names_df
     except Exception as ex:
         print(ex)
+        print(traceback.format_exc())
 
 
 def predict_genders(prediction_model, names_df: DataFrame) -> DataFrame:
@@ -74,19 +77,25 @@ def predict_genders(prediction_model, names_df: DataFrame) -> DataFrame:
         result = prediction_model.predict(preprocessed_names, batch_size=None, verbose='auto', max_queue_size=10, workers=1, use_multiprocessing=False).squeeze(axis=1)
         names_df['gender'] = ['M' if logit > 0.5 else 'F' for logit in result]
         names_df['probability'] = [logit if logit > 0.5 else 1.0 - logit for logit in result]
+
+        # remove preprocessed column
+        names_df.drop(columns=['preprocessed'], inplace=True)
+
         return names_df
     except Exception as ex:
         print(ex)
+        print(traceback.format_exc())
 
 
 if __name__ == '__main__':
     print('%s - Start processing...' % '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()))
     try:
         # load serialized model with weights
-        model = load_model('data/gender_classifier.json', 'data/gender_classifier.h5')
+        # model = load_model('data/gender_classifier.json', 'data/gender_classifier.h5')
+        model = keras.models.load_model('data/gender_classifier.h5')
 
         # read names from training data, drop empty names and set probability to 1.0
-        df_names_train = pd.read_csv('data/names_binary_ascii.csv')
+        df_names_train = pd.read_csv('data/names.csv')
         df_names_train.dropna(subset=['name'], inplace=True)
         df_names_train['name'] = df_names_train['name'].str.lower()
         df_names_train['probability'] = 1.0
@@ -105,35 +114,44 @@ if __name__ == '__main__':
         # get names that are not yet predicted
         df_unpredicted = df[df['gender'].isnull()]
 
+        df_predicted_1 = DataFrame()
         # predict names in chunks
         sections = 100
         with tqdm(total=sections) as pbar:
             for df_chunk in np.array_split(df_unpredicted, sections):
                 df_chunk = preprocess_names(df_chunk)
                 df_chunk = predict_genders(model, df_chunk)
-
-                # remove preprocessed column
-                df_chunk.drop(columns=['preprocessed'], inplace=True)
-
-                df = pd.concat([df, df_chunk], ignore_index=True)
+                df_predicted_1 = pd.concat([df_predicted_1, df_chunk], ignore_index=True)
                 pbar.update(1)
 
         # additional predictions for names that have a low probability and contain spaces for potential first names
-        df_low_probability = df[(df['probability'] < 0.8) & (df['name'].str.contains(r'\s', regex=True))]
+        df_low_probability = df_predicted_1[(df_predicted_1['probability'] < 0.8) & (df_predicted_1['name'].str.contains(r'\s', regex=True))]
 
+        df_predicted_2 = DataFrame()
         # predict names in chunks
         sections = 20
         with tqdm(total=sections) as pbar:
             for df_chunk in np.array_split(df_low_probability, sections):
                 df_chunk = preprocess_names(df_chunk, first_names=True)
                 df_chunk = predict_genders(model, df_chunk)
-                df = pd.concat([df, df_chunk], ignore_index=True)
+                df_predicted_2 = pd.concat([df_predicted_2, df_chunk], ignore_index=True)
                 pbar.update(1)
 
-        df = df.drop_duplicates(subset='name', keep='first')
-        df = df.sort_values(by=['name'])
-        df = df.reset_index(drop=True)
-        df.to_csv('data/character_names_predicted.csv', index=False)
+        df_predicted = pd.concat([df_names_train, df_predicted_2, df_predicted_1], ignore_index=True)
+
+        # drop duplicate names
+        df_predicted = df_predicted.drop_duplicates(subset='name', keep='first')
+        df_predicted = df_predicted.dropna(subset=['name'])
+
+        # sort by name
+        df_predicted = df_predicted.sort_values(by=['name'])
+
+        # redo the index
+        df_predicted = df_predicted.reset_index(drop=True)
+
+        # save to csv
+        df_predicted.to_csv('data/character_names_predicted.csv', index=False)
 
     except Exception as e:
         print(e)
+        print(traceback.format_exc())
