@@ -3,6 +3,7 @@
 # -----------------------------------------------------------
 
 import tensorflow as tf
+from unidecode import unidecode
 
 keras = tf.keras
 import pandas as pd
@@ -13,6 +14,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.callbacks import EarlyStopping
 from datetime import datetime
+
+UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}
 
 
 def save_model_history():
@@ -43,10 +46,22 @@ def get_lstm_model(num_alphabets=27, name_length=50, embedding_dim=256):
 
 
 def preprocess(names_df, train=True):
-    # convert names to lowercase
+    # replace umlauts because unidecode replaces e.g. ä to a
+    names_df['name'] = names_df['name'].str.translate(UMLAUTS)
+
+    # decode characters; e.g. á => a
+    names_df['name'] = names_df['name'].apply(unidecode)
+
+    # convert name to lowercase (as done for training)
     names_df['name'] = names_df['name'].str.lower()
 
-    # split names into characters
+    # remove all non-alphabetic characters
+    names_df['name'] = names_df['name'].str.replace(r'[^\w\s]', '', regex=True)
+
+    # strip whitespaces
+    names_df['name'] = names_df['name'].str.strip()
+
+    # split individual characters
     names_df['name'] = names_df['name'].apply(lambda x: list(x))
 
     # pad names to 50 characters
@@ -67,11 +82,11 @@ if __name__ == '__main__':
     print('%s - Start processing...' % '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()))
 
     df = pd.read_csv('data/names_binary_ascii.csv')
-    print(df.shape)
-    df.head()
+    # print(df.shape)
+    # df.head()
 
     df = preprocess(df)
-    df.head()
+    # df.head()
 
     # initialize model
     model = get_lstm_model(num_alphabets=27, name_length=50, embedding_dim=256)
@@ -92,8 +107,8 @@ if __name__ == '__main__':
 
     # serialize model to JSON
     model_json = model.to_json()
-    with open('gender_classifier.json', 'w') as json_file:
+    with open('data/gender_classifier_new.json', 'w') as json_file:
         json_file.write(model_json)
     # serialize weights to HDF5
-    model.save_weights('gender_classifier.h5')
+    model.save_weights('data/gender_classifier_new.h5')
     print('Saved model to disk')
