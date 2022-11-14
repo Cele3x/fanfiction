@@ -1,16 +1,13 @@
 # -----------------------------------------------------------
-# Sets and counts gender occurances for stories using the
+# Sets and counts gender occurrences for stories using the
 # previously predicted names list.
 # -----------------------------------------------------------
-import time
 
 import pandas as pd
-import pymongo
 from tqdm import tqdm
 from utils.db_connect import DatabaseConnection
 from datetime import datetime
 from pymongo import UpdateOne
-import timeit
 
 
 if __name__ == '__main__':

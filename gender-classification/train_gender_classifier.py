@@ -1,19 +1,22 @@
 # -----------------------------------------------------------
-# Train gender classifier model.
+# Train gender classifier LSTM model using TensorFlow and
+# Keras.
 # -----------------------------------------------------------
 
 import tensorflow as tf
-from unidecode import unidecode
-
-keras = tf.keras
+import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from unidecode import unidecode
+from datetime import datetime
+
+# fix for apple m1
+keras = tf.keras
 from keras import Sequential
 from keras.layers import Embedding, Bidirectional, LSTM, Dense
 from keras.optimizers import Adam
-import numpy as np
-from sklearn.model_selection import train_test_split
 from keras.callbacks import EarlyStopping
-from datetime import datetime
+
 
 UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}
 

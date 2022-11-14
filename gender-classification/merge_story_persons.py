@@ -4,13 +4,11 @@
 # -----------------------------------------------------------
 
 import re
-import time
 from datetime import datetime
 import fnmatch
 import traceback
 
 import pandas as pd
-import pymongo
 from pymongo import UpdateOne
 from tqdm import tqdm
 from unidecode import unidecode
