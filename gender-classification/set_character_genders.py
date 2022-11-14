@@ -23,7 +23,7 @@ if __name__ == '__main__':
             raise Exception('Database connection failed.')
 
         # load dataframe with names
-        df = pd.read_csv('data/names.csv', usecols=['name', 'gender', 'probability'], dtype={'name': str, 'gender': str, 'probability': float}, index_col=0)
+        df = pd.read_csv('data/character_names_predicted.csv', usecols=['name', 'gender', 'probability'], dtype={'name': str, 'gender': str, 'probability': float}, index_col=0)
 
         with client.start_session() as session:
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                     # iterate over persons
                     with tqdm(total=len(story['persons']), position=1, leave=False, colour='#AED8F2') as pbar_person:
                         for name, occurrences in story['persons'].items():
-                            pbar.set_description('Processing person %s...' % name)
+                            pbar_person.set_description('Processing person %s...' % name)
 
                             # find name in dataframe
                             if name not in df.index:
