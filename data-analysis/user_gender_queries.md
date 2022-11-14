@@ -113,7 +113,6 @@ db.reviews.aggregate([
 
 ### Male/Female Characters and Pronouns Usage in Relation to Authors Sex
 ```javascript
-// 
 db.stories.aggregate([
 	{
 		$lookup: {
@@ -148,6 +147,72 @@ db.stories.aggregate([
 			maleCharsPercent: { $round: [{ $multiply: [{ $divide: [ '$sumMaleChars', { $sum: ['$sumFemaleChars', '$sumMaleChars'] } ]}, 100 ]}, 2]},
 			femalePronounsPercent: { $round: [{ $multiply: [{ $divide: [ { $sum: ['$prnIhr', '$prnIhrer', '$prnSie'] }, { $sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnIhr', '$prnIhrer', '$prnSeiner', '$prnSie'] } ]}, 100 ]}, 2]},
 			malePronounsPercent: { $round: [{ $multiply: [{ $divide: [ { $sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnSeiner'] }, { $sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnIhr', '$prnIhrer', '$prnSeiner', '$prnSie'] } ]}, 100 ]}, 2]}
+		}
+	}
+])
+```
+
+### Male/Female Characters and Pronouns Usage in Relation to Authors Age
+```javascript
+db.stories.aggregate([
+	{
+		$lookup: {
+			from: 'users',
+			localField: 'authorId',
+			foreignField: '_id',
+			as: 'author'
+		}
+	},
+	{
+		$unwind: '$author'
+	},
+	{
+		$match: {
+			'author.age': {$ne: null, $gt: 0}
+		}
+	},
+	{
+		$group: {
+			_id: {
+				$cond: [
+					{$lte: ['$author.age', 20]},
+					'1-20',
+					{
+						$cond: [
+							{$lte: ['$author.age', 25]},
+							'21-25',
+							{
+								$cond: [
+									{$lte: ['$author.age', 30]},
+									'26-30',
+									'31+'
+								]
+							}
+						]
+					}
+				]
+			},
+			count: {$sum: 1},
+			sumFemaleChars: {$sum: '$genders.females'},
+			sumMaleChars: {$sum: '$genders.males'},
+			prnEr: {$sum: '$pronouns.er'},
+			prnIhm: {$sum: '$pronouns.ihm'},
+			prnIhn: {$sum: '$pronouns.ihn'},
+			prnIhr: {$sum: '$pronouns.ihr'},
+			prnIhrer: {$sum: '$pronouns.ihrer'},
+			prnSeiner: {$sum: '$pronouns.seiner'},
+			prnSie: {$sum: '$pronouns.sie'}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			count: 1,
+			authorAge: '$_id',
+			femaleCharsPercent: {$round: [{$multiply: [{$divide: ['$sumFemaleChars', {$sum: ['$sumFemaleChars', '$sumMaleChars']}]}, 100]}, 2]},
+			maleCharsPercent: {$round: [{$multiply: [{$divide: ['$sumMaleChars', {$sum: ['$sumFemaleChars', '$sumMaleChars']}]}, 100]}, 2]},
+			femalePronounsPercent: {$round: [{$multiply: [{$divide: [{$sum: ['$prnIhr', '$prnIhrer', '$prnSie']}, {$sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnIhr', '$prnIhrer', '$prnSeiner', '$prnSie']}]}, 100]}, 2]},
+			malePronounsPercent: {$round: [{$multiply: [{$divide: [{$sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnSeiner']}, {$sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnIhr', '$prnIhrer', '$prnSeiner', '$prnSie']}]}, 100]}, 2]},
 		}
 	}
 ])
