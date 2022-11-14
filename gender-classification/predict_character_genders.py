@@ -13,25 +13,8 @@ import traceback
 
 # fix for apple m1
 keras = tf.keras
-# from keras.models import model_from_json
 
 UMLAUTS = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('Ä'): 'Ae', ord('Ü'): 'Ue', ord('Ö'): 'Oe'}
-
-
-def load_model(json_model_path: str, weights_path: str):
-    try:
-        # load model from json file
-        with open(json_model_path, 'r') as json_file:
-            loaded_model_json = json_file.read()
-        loaded_model = model_from_json(loaded_model_json)
-
-        # load weights into new model
-        loaded_model.load_weights(weights_path)
-
-        return loaded_model
-    except Exception as ex:
-        print(ex)
-        print(traceback.format_exc())
 
 
 def preprocess_names(names_df: DataFrame, first_names: bool = False) -> DataFrame:
@@ -90,8 +73,7 @@ def predict_genders(prediction_model, names_df: DataFrame) -> DataFrame:
 if __name__ == '__main__':
     print('%s - Start processing...' % '{:%Y-%m-%d %H:%M:%S}'.format(datetime.now()))
     try:
-        # load serialized model with weights
-        # model = load_model('data/gender_classifier.json', 'data/gender_classifier.h5')
+        # load model with weights
         model = keras.models.load_model('data/gender_classifier.h5')
 
         # read names from training data, drop empty names and set probability to 1.0
