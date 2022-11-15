@@ -217,3 +217,104 @@ db.stories.aggregate([
 	}
 ])
 ```
+
+### Male/Female Characters, Pronouns and Pairings Usage in Relation to Authors Age
+```javascript
+db.stories.aggregate([
+	{
+		$lookup: {
+			from: 'users',
+			localField: 'authorId',
+			foreignField: '_id',
+			as: 'author'
+		}
+	},
+	{
+		$unwind: '$author'
+	},
+	{
+		$unwind: {
+			path: '$pairings',
+			preserveNullAndEmptyArrays: true
+		}
+	},
+	{
+		$match: {
+			'author.age': {$ne: null, $gt: 0}
+		}
+	},
+	{
+		$group: {
+			_id: {
+				$cond: [
+					{$lte: ['$author.age', 20]},
+					'1-20',
+					{
+						$cond: [
+							{$lte: ['$author.age', 25]},
+							'21-25',
+							{
+								$cond: [
+									{$lte: ['$author.age', 30]},
+									'26-30',
+									'31+'
+								]
+							}
+						]
+					}
+				]
+			},
+			count: {$sum: 1},
+			sumFemaleChars: {$sum: '$genders.females'},
+			sumMaleChars: {$sum: '$genders.males'},
+			prnEr: {$sum: '$pronouns.er'},
+			prnIhm: {$sum: '$pronouns.ihm'},
+			prnIhn: {$sum: '$pronouns.ihn'},
+			prnIhr: {$sum: '$pronouns.ihr'},
+			prnIhrer: {$sum: '$pronouns.ihrer'},
+			prnSeiner: {$sum: '$pronouns.seiner'},
+			prnSie: {$sum: '$pronouns.sie'},
+			sumPairingsMM: {$sum: {$cond: [{$eq: ['$pairings', 'M/M']}, 1, 0]}},
+			sumPairingsFM: {$sum: {$cond: [{$eq: ['$pairings', 'F/M']}, 1, 0]}},
+			sumPairingsFF: {$sum: {$cond: [{$eq: ['$pairings', 'F/F']}, 1, 0]}},
+			sumPairingsMulti: {$sum: {$cond: [{$eq: ['$pairings', 'Multi']}, 1, 0]}},
+			sumPairingsGeneric: {$sum: {$cond: [{$eq: ['$pairings', 'Generic']}, 1, 0]}},
+			sumPairingsOther: {$sum: {$cond: [{$eq: ['$pairings', 'Other']}, 1, 0]}}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			ageGroup: '$_id',
+			count: 1,
+			femaleChars: '$sumFemaleChars',
+			maleChars: '$sumMaleChars',
+			totalChars: {$sum: ['$sumFemaleChars', '$sumMaleChars']},
+			femalePronouns: {$sum: ['$prnIhr', '$prnIhrer', '$prnSie']},
+			malePronouns: {$sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnSeiner']},
+			totalPronouns: {$sum: ['$prnEr', '$prnIhm', '$prnIhn', '$prnIhr', '$prnIhrer', '$prnSeiner', '$prnSie']},
+			sumPairingsMM: 1,
+			sumPairingsFM: 1,
+			sumPairingsFF: 1,
+			sumPairingsMulti: 1,
+			sumPairingsGeneric: 1,
+			sumPairingsOther: 1,
+			totalPairings: {$sum: ['$sumPairingsMM', '$sumPairingsFM', '$sumPairingsFF', '$sumPairingsMulti', '$sumPairingsGeneric', '$sumPairingsOther']},
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			ageGroup: 1,
+			charsRatio: {$round: [{$divide: ['$maleChars', '$totalChars']}, 2]},
+			pronounsRatio: {$round: [{$divide: ['$malePronouns', '$totalPronouns']}, 2]},
+			pairingsMMPercent: {$round: [{$multiply: [{$divide: ['$sumPairingsMM', '$totalPairings']}, 100]}, 2]},
+			pairingsFMPercent: {$round: [{$multiply: [{$divide: ['$sumPairingsFM', '$totalPairings']}, 100]}, 2]},
+			pairingsFFPercent: {$round: [{$multiply: [{$divide: ['$sumPairingsFF', '$totalPairings']}, 100]}, 2]},
+			pairingsMultiPercent: {$round: [{$multiply: [{$divide: ['$sumPairingsMulti', '$totalPairings']}, 100]}, 2]},
+			pairingsGenericPercent: {$round: [{$multiply: [{$divide: ['$sumPairingsGeneric', '$totalPairings']}, 100]}, 2]},
+			pairingsOtherPercent: {$round: [{$multiply: [{$divide: ['$sumPairingsOther', '$totalPairings']}, 100]}, 2]},
+		}
+	}
+])
+```
