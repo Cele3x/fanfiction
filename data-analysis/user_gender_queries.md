@@ -318,3 +318,51 @@ db.stories.aggregate([
 	}
 ])
 ```
+
+### User Sex Distribution per Genre
+```javascript
+db.stories.aggregate([
+	{
+		$match: {source: 'FanFiktion'}
+	},
+	{
+		$lookup: {
+			from: 'users',
+			localField: 'authorId',
+			foreignField: '_id',
+			as: 'author'
+		}
+	},
+	{
+		$unwind: '$author'
+	},
+	{
+		$group: {
+			_id: '$genre',
+			count: {$sum: 1},
+			femaleAuthors: {$sum: {$cond: [{$eq: ['$author.gender', 'female']}, 1, 0]}},
+			maleAuthors: {$sum: {$cond: [{$eq: ['$author.gender', 'male']}, 1, 0]}},
+			otherAuthors: {$sum: {$cond: [{$eq: ['$author.gender', 'other']}, 1, 0]}},
+			nullAuthors: {$sum: {$cond: [{$eq: ['$author.gender', 'female']}, 0, {$cond: [{$eq: ['$author.gender', 'male']}, 0, {$cond: [{$eq: ['$author.gender', 'other']}, 0, 1]}]}]}}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			genre: '$_id',
+			count: 1,
+			femaleAuthors: 1,
+			femaleAuthorPercent: {$round: [{$multiply: [{$divide: ['$femaleAuthors', '$count']}, 100]}, 2]},
+			maleAuthors: 1,
+			maleAuthorPercent: {$round: [{$multiply: [{$divide: ['$maleAuthors', '$count']}, 100]}, 2]},
+			otherAuthors: 1,
+			otherAuthorPercent: {$round: [{$multiply: [{$divide: ['$otherAuthors', '$count']}, 100]}, 2]},
+			nullAuthors: 1,
+			nullAuthorPercent: {$round: [{$multiply: [{$divide: ['$nullAuthors', '$count']}, 100]}, 2]},
+		}
+	},
+	{
+		$sort: {count: -1}
+	}
+])
+```
