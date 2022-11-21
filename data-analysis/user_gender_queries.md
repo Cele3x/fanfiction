@@ -28,6 +28,13 @@ db.users.aggregate([
     }
 ])
 ```
+| avgAge | frequency | genre | percent |
+| :--- | :--- | :--- | :--- |
+| 23.115023474178404 | 671 | other | 0.49 |
+| 26.889510870704658 | 87784 | female | 64.68 |
+| 27.10342481288274 | 39437 | null | 29.06 |
+| 27.9820692497939 | 7834 | male | 5.77 |
+
 
 ### Story Author Genders for FanFiktion.de
 ```javascript
@@ -69,6 +76,13 @@ db.stories.aggregate([
     }
 ])
 ```
+| frequency | gender | percent |
+| :--- | :--- | :--- |
+| 6291 | male | 5.87 |
+| 72959 | female | 68.04 |
+| 511 | other | 0.48 |
+| 27463 | null | 25.61 |
+
 
 ### Review Author Genders for FanFiktion.de
 ```javascript
@@ -110,6 +124,13 @@ db.reviews.aggregate([
     }
 ])
 ```
+| frequency | gender | percent |
+| :--- | :--- | :--- |
+| 51084 | female | 67.89 |
+| 19185 | null | 25.5 |
+| 4521 | male | 6.01 |
+| 450 | other | 0.6 |
+
 
 ### Male/Female Characters and Pronouns Usage in Relation to Authors Sex
 ```javascript
@@ -151,6 +172,13 @@ db.stories.aggregate([
 	}
 ])
 ```
+| authorGender | femaleCharsPercent | femalePronounsPercent | maleCharsPercent | malePronounsPercent |
+| :--- | :--- | :--- | :--- | :--- |
+| other | 31.03 | 31.69 | 68.97 | 68.31 |
+| null | 31.85 | 31.82 | 68.15 | 68.18 |
+| male | 34.52 | 35.64 | 65.48 | 64.36 |
+| female | 35.82 | 37.66 | 64.18 | 62.34 |
+
 
 ### Male/Female Characters and Pronouns Usage in Relation to Authors Age
 ```javascript
@@ -217,6 +245,13 @@ db.stories.aggregate([
 	}
 ])
 ```
+| authorAge | count | femaleCharsPercent | femalePronounsPercent | maleCharsPercent | malePronounsPercent |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 1-20 | 15380 | 39.18 | 41.9 | 60.82 | 58.1 |
+| 21-25 | 70171 | 38.51 | 38.93 | 61.49 | 61.07 |
+| 26-30 | 64502 | 37.14 | 38.69 | 62.86 | 61.31 |
+| 31+ | 56684 | 33.42 | 35.18 | 66.58 | 64.82 |
+
 
 ### Male/Female Characters, Pronouns and Pairings Usage in Relation to Authors Age
 ```javascript
@@ -318,6 +353,13 @@ db.stories.aggregate([
 	}
 ])
 ```
+| ageGroup | charsRatio | pairingsFFPercent | pairingsFMPercent | pairingsGenericPercent | pairingsMMPercent | pairingsMultiPercent | pairingsOtherPercent | pronounsRatio |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1-20 | 0.61 | 0.62 | 5.2 | 73.52 | 19.07 | 1.41 | 0.18 | 0.58 |
+| 31+ | 0.67 | 0.57 | 3.25 | 64.25 | 31.52 | 0.35 | 0.07 | 0.65 |
+| 26-30 | 0.63 | 0.57 | 2.56 | 67.96 | 28.43 | 0.44 | 0.04 | 0.61 |
+| 21-25 | 0.61 | 0.28 | 2.95 | 71.95 | 24.12 | 0.62 | 0.08 | 0.61 |
+
 
 ### User Sex Distribution per Genre
 ```javascript
@@ -366,3 +408,16 @@ db.stories.aggregate([
 	}
 ])
 ```
+| count | femaleAuthorPercent | femaleAuthors | genre | maleAuthorPercent | maleAuthors | nullAuthorPercent | nullAuthors | otherAuthorPercent | otherAuthors |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 107045 | 76.2 | 81571 | Anime & Manga | 6.09 | 6516 | 16.9 | 18089 | 0.81 | 869 |
+| 106007 | 75.3 | 79826 | Bücher | 4.54 | 4810 | 19.39 | 20559 | 0.77 | 812 |
+| 75854 | 76.34 | 57907 | Prominente | 2.65 | 2012 | 20.17 | 15296 | 0.84 | 639 |
+| 51942 | 75.67 | 39302 | Serien & Podcasts | 3.07 | 1596 | 20.41 | 10602 | 0.85 | 442 |
+| 19093 | 70.03 | 13371 | Kino- & TV-Filme | 8 | 1527 | 20.67 | 3947 | 1.3 | 248 |
+| 16923 | 65.24 | 11041 | Computerspiele | 14.31 | 2421 | 19.36 | 3276 | 1.09 | 185 |
+| 9064 | 65.72 | 5957 | Cartoons & Comics | 12.41 | 1125 | 20.53 | 1861 | 1.33 | 121 |
+| 5414 | 63.96 | 3463 | Crossover | 13.32 | 721 | 21.72 | 1176 | 1 | 54 |
+| 2738 | 76.52 | 2095 | Musicals | 3.1 | 85 | 17.35 | 475 | 3.03 | 83 |
+| 768 | 30.21 | 232 | Tabletop- & Rollenspiele | 40.76 | 313 | 28.78 | 221 | 0.26 | 2 |
+

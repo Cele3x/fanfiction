@@ -44,6 +44,16 @@ db.stories.aggregate([
     }
 ])
 ```
+| frequency | pairing | percent |
+| :--- | :--- | :--- |
+| 276188 | Generic | 66.5 |
+| 117051 | M/M | 28.18 |
+| 14784 | F/M | 3.56 |
+| 2826 | F/F | 0.68 |
+| 2702 | Multi | 0.65 |
+| 1059 | null | 0.25 |
+| 693 | Other | 0.17 |
+
 
 ### Rating Frequencies
 ```javascript
@@ -124,3 +134,12 @@ db.stories.aggregate([
     { $sort : { frequency: -1 } }
 ])
 ```
+| frequency | percent | rating |
+| :--- | :--- | :--- |
+| 188704 | 45.7 | P12 |
+| 118480 | 28.69 | P16 |
+| 67995 | 16.47 | P18 |
+| 33654 | 8.15 | P6 |
+| 2223 | 0.54 | P18-AVL |
+| 1867 | 0.45 | Not Rated |
+

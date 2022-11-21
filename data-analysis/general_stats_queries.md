@@ -14,6 +14,11 @@ db.stories.aggregate([
 	},
 ])
 ```
+| archive         | maxCreatedAt | maxUpdatedAt | minCreatedAt | minUpdatedAt |
+|:----------------| :--- | :--- | :--- | :--- |
+| FanFiktion      | 2022-08-23T08:58:55.600Z | 2022-08-23T11:51:34.930Z | 2022-01-28T15:03:34.827Z | 2022-01-31T09:21:16.908Z |
+| ArchiveOfOurOwn | 2022-08-08T10:13:03.154Z | 2022-08-08T10:13:03.154Z | 2022-07-25T16:29:34.428Z | 2022-07-25T16:29:34.428Z |
+
 
 ### Stories per Source
 ```javascript
@@ -26,6 +31,11 @@ db.stories.aggregate([
     }
 ])
 ```
+| archive         | storyCount |
+|:----------------| :--- |
+| FanFiktion      | 394848 |
+| ArchiveOfOurOwn | 18075 |
+
 
 ### Chapters per Source
 ```javascript
@@ -38,6 +48,11 @@ db.chapters.aggregate([
     }
 ])
 ```
+| archive         | storyCount |
+|:----------------| :--- |
+| ArchiveOfOurOwn | 70857 |
+| FanFiktion      | 1885066 |
+
 
 ### Users per Source
 ```javascript
@@ -50,6 +65,11 @@ db.users.aggregate([
     }
 ])
 ```
+| archive         | userCount |
+|:----------------| :--- |
+| FanFiktion      | 135726 |
+| ArchiveOfOurOwn | 14249 |
+
 
 ### Reviews per Source
 ```javascript
@@ -62,3 +82,8 @@ db.reviews.aggregate([
     }
 ])
 ```
+| archive         | reviewCount |
+|:----------------| :--- |
+| FanFiktion      | 4849646 |
+| ArchiveOfOurOwn | 37721 |
+
