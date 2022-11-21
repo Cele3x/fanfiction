@@ -35,9 +35,9 @@ db.stories.aggregate([
 ```
 
 | archive         | storyCount |
-|:----------------| :--- |
-| FanFiktion      | 394,848 |
-| ArchiveOfOurOwn | 18,075 |
+|:----------------|:-----------|
+| FanFiktion      | 394,848    |
+| ArchiveOfOurOwn | 18,075     |
 
 ### Chapters per Source
 
@@ -53,9 +53,9 @@ db.chapters.aggregate([
 ```
 
 | archive         | storyCount |
-|:----------------| :--- |
-| ArchiveOfOurOwn | 70,857 |
-| FanFiktion      | 1,885,066 |
+|:----------------|:-----------|
+| ArchiveOfOurOwn | 70,857     |
+| FanFiktion      | 1,885,066  |
 
 ### Users per Source
 
@@ -71,9 +71,9 @@ db.users.aggregate([
 ```
 
 | archive         | userCount |
-|:----------------| :--- |
-| FanFiktion      | 135,726 |
-| ArchiveOfOurOwn | 14,249 |
+|:----------------|:----------|
+| FanFiktion      | 135,726   |
+| ArchiveOfOurOwn | 14,249    |
 
 ### Reviews per Source
 
@@ -89,7 +89,7 @@ db.reviews.aggregate([
 ```
 
 | archive         | reviewCount |
-|:----------------| :--- |
-| FanFiktion      | 4,849,646 |
-| ArchiveOfOurOwn | 37,721 |
+|:----------------|:------------|
+| FanFiktion      | 4,849,646   |
+| ArchiveOfOurOwn | 37,721      |
 
