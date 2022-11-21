@@ -1,0 +1,92 @@
+\PassOptionsToPackage{main=english}{babel}
+
+\documentclass[thesis]{mi-document}
+
+% custom packages and commands
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{multirow}
+%\usepackage{wrapfig}
+%\usepackage{floatrow}
+%\newfloatcommand{capbtabbox}{table}[][\FBwidth]
+
+\master
+
+\title{Acquisition of a German Fan Fiction Corpus and Analysis in the Context of Gender Representation}
+\author{Jonathan Sasse}
+\semester{SS 2022}
+\course{Master's Thesis}
+\module{[z.B. MEI-M 04 (B.A.)]}
+\dozent{[Seminarleiter]}
+\studid{1872869}
+\studSemester{9. Semester M.Sc. Medieninformatik}
+\phone{0941/133742666} % Optional
+\studSubject{Medieninformatik}
+\firstReviewer{Prof. Dr. Christian Wolff}
+\secondReviewer{Prof. Dr. Jürgen Reischer}
+\advisor{Thomas Schmidt}
+\address{Am alten Schlachthof 20, 93055 Regensburg}{} % Optional
+\mail{jonathan.sasse@outlook.de}
+\studMail{jonathan.sasse@stud.uni-regensburg.de}
+\dateHandedIn{Abgabetermin der Arbeit}
+\keywords{fan fiction; corpus acquisition; corpus analysis; nlp; gender representation; online writing}
+
+\bibliographystyle{apacite}
+
+\begin{document}
+
+\counterwithout{lstlisting}{chapter}  % counter for listing does not work in AtBeginDocument
+
+\pagestyle{empty}
+
+\maketitle
+
+\tableofcontents % Optional
+\listoffigures % Optional
+\listoftables % Optional
+%\lstlistoflistings % Optional
+
+\clearpage
+\doublespacing
+
+\input{01_abstract}
+
+\clearpage
+\pagestyle{headings} % Seitennummern und Kapitelbezeichnungen anzeigen
+
+\include{02_introduction}
+\include{03_main_intro}
+\include{04_related_work}
+\include{05_data_acquisition}
+\include{06_data_supplements}
+\include{07_results}
+\include{08_conclusion}
+
+% Kapitelbezeichnung in der rechten oberen Ecke entfernen
+\clearpage
+\pagestyle{plain}
+
+% Literaturverzeichnis anzeigen
+% kleinerer Zeilenabstand, damit es nicht so gestreckt aussieht
+\onehalfspacing
+\bibliography{literature}
+\doublespacing
+
+% Anhang
+\appendix
+\include{appendix}
+
+\begin{singlespace}
+\KOMAoptions{parskip=full}
+
+\include{copyright}
+\include{licensing}
+
+% Stichwortverzeichnis anzeigen. Weiß nicht, warum das nicht nach dem Inhaltsverzeichnis kommt.
+\printindex
+\end{singlespace}
+
+% Inhalt des Datenträgers. Gehört meiner Meinung nach zum Anhang, aber was weiß ich schon. AS
+%\newpage
+%\input{datenträger}
+
+\end{document}

@@ -1,0 +1,478 @@
+\chapter{Results and Discussion}\label{ch:results}
+
+Utilizing all previously described and implemented methods, we analyzed the data and present the results in this chapter.
+The results are divided into two sections: the first part is about general statistical analysis of the corpus, the second part is about the analysis of the gender representation.
+
+
+\section{Corpus Analysis}\label{sec:corpus-analysis}
+
+Fan Fiction archives were scraped over a time period of 7 months, from January 28 to August 23, 2022.
+Updates for \emph{FF.de} database documents range over the full duration, while \emph{AO3} was processed over a period of 2 weeks, from July 25 to August 8, 2022.
+This was due to the fact that German-language fan fiction is less common on \emph{AO3} in comparison and took therefore less time to scrape.
+The corpus acquired consists of 412,923 stories, their chapters (1,955,923) and reviews (4,887,367), as well their respective authors (149,975) as depicted in Table~\ref{tab:corpus-overview}.
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        \textbf{Archive} &
+        \multicolumn{1}{c}{\textbf{Stories}} &
+        \multicolumn{1}{c}{\textbf{Chapters}} &
+        \multicolumn{1}{c}{\textbf{Users}} &
+        \multicolumn{1}{c}{\textbf{Reviews}} \\
+        \midrule
+        \textbf{FF.de} & 394,848 & 1,885,066 & 135,726 & 4,849,646 \\
+        \textbf{AO3}   & 18,075  & 70,857    & 14,249  & 37,721    \\
+        \midrule
+        \textbf{Total} & 412,923 & 1,955,923 & 149,975 & 4,887,367 \\
+        \bottomrule
+    \end{tabular}
+    \caption[Corpus overview.]{Corpus overview.}
+    \label{tab:corpus-overview}
+\end{table}
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lrr}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Fandom}} &
+        \multicolumn{1}{c}{\cellcolor[HTML]{00576E}{\color[HTML]{FCFCF6} \textbf{FF.de}}} &
+        \multicolumn{1}{c}{\cellcolor[HTML]{990000}{\color[HTML]{FFFFFF} \textbf{AO3}}} \\
+        \midrule
+        \addlinespace[.2em]\cellcolor[HTML]{990000}{\color[HTML]{FFFFFF} \textbf{Tatort}}                  & 644 (0.16\%)     & 2,978 (16.48\%) \\
+        \addlinespace[.2em]\textbf{Harry Potter}                                                           & 54,405 (13.78\%) & 1,793 (9.92\%)  \\
+        \addlinespace[.2em]\textbf{Music}                                                                  & 38,568 (9.77\%)  & 654 (3.62\%)    \\
+        \addlinespace[.2em]\cellcolor[HTML]{00576E}{\color[HTML]{FCFCF6} \textbf{Naruto}}                  & 27,303 (6.91\%)  & 200 (1.11\%)    \\
+        \addlinespace[.2em]\cellcolor[HTML]{990000}{\color[HTML]{FFFFFF} \textbf{Marvel}}                  & 5,311 (1.35\%)   & 1,234 (6.83\%)  \\
+        \addlinespace[.2em]\cellcolor[HTML]{00576E}{\color[HTML]{FCFCF6} \textbf{Internet-Stars}}          & 17,830 (4.52\%)  & 50 (0.28\%)     \\
+        \addlinespace[.2em]\cellcolor[HTML]{990000}{\color[HTML]{FFFFFF} \textbf{Canon}}                   & N/A              & 671 (3.71\%)    \\
+        \addlinespace[.2em]\cellcolor[HTML]{00576E}{\color[HTML]{FCFCF6} \textbf{Twilight}}                & 13,734 (3.48\%)  & 45 (0.25\%)     \\
+        \addlinespace[.2em]\cellcolor[HTML]{00576E}{\color[HTML]{FCFCF6} \textbf{One Piece}}               & 11,443 (2.90\%)  & 89 (0.49\%)     \\
+        \addlinespace[.2em]\textbf{Sports}                                                                 & 11,440 (2.90\%)  & 663 (3.67\%)    \\
+        \addlinespace[.2em]\cellcolor[HTML]{990000}{\color[HTML]{FFFFFF} \textbf{The Three Investigators}} & 1,251 (0.32\%)   & 509 (2.82\%)    \\
+        \bottomrule
+    \end{tabular}
+    \caption[The top 7 fandoms on FF.de and AO3 respectively.]{The top 7 fandoms on FF.de and AO3 respectively. Individual appearances in the top fandoms are color-coded, while mutual appearances are not.}
+    \label{tab:top-7-fandoms}
+\end{table}
+
+The lack of diversity in german fan fiction mentioned by \citet{Cuntz-Leng2015AGermany} in Section~\ref{sec:history-of-german-fan-fiction} can be confirmed.
+Table~\ref{tab:top-7-fandoms} demonstrates that after 7 years, Harry Potter is still by a large margin the most popular fandom on \emph{FF.de}.
+While in 2015 the top 7 fandom distributions have shifted only slightly, stories about musicians as \emph{One Piece}, \emph{One Direction} and \emph{Tokio Hotel} lost some popularity, likely due to the high fluctuation of overall approval ratings in the music industry.
+With an increasing number of publications about celebrities from the Internet (YouTuber~\footnote{https://www.youtube.com}) and sports (mainly soccer), these fandoms have been overtaken.
+
+An interesting observation is the very high number and overall share of stories about \emph{Tatort}, a German crime series, on \emph{AO3} compared to this fandom on \emph{FF.de}.
+This is likely due to the fact that the fandom community for \emph{Tatort} established itself on \emph{AO3} and authors active in this rather publish their stories there.
+
+The same assumption can safely be applied to fan fiction distribution as a whole as depicted in Table~\ref{tab:corpus-overview}.
+Users publish their stories where their language specific fan base and community is located.
+For German fanfiction, this is generally the \emph{FF.de} archive, but in rare cases on other platforms, such as in the instance of \emph{Tatort}.
+This can explain the scarcity of German-language fan fiction on \emph{AO3}.
+Another attempted explanation is the tendency, mentioned in Section~\ref{sec:history-of-german-fan-fiction}~\citep{Cuntz-Leng2015AGermany}, to migrate to fan fiction written in English, even as a non-native speaker.
+
+Like \citet{Schmidt2021TowardsOwn} for AO3, we also observe regarding the supposedly strongly intertwined anime fan fiction in Germany that the most popular anime fandom in our corpus is \emph{Naruto} with only 27,503 stories and a share of 6.66\%.
+Even in commonly male-dominated genres, there is a preponderance of female writers.
+
+Also worth mentioning in this context are the works about stories by Karl May, who, according to \citet{Cuntz-Leng2015AGermany}, is said to have been directly responsible for the emergence and development of the German fan fiction scene in the 19th century.
+This so-called phenomenon seems to have died before the establishment of online archives, because the number of publications about Karl May stories on \emph{FF.de} is only 204 (0.05\%) and on \emph{AO3} 46 (0.25\%).
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.25}
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Genre}} &
+        \multicolumn{1}{c}{\textbf{Sentences}} &
+        \multicolumn{1}{c}{\textbf{Words}} &
+        \multicolumn{1}{c}{\textbf{Letters}} &
+        \multicolumn{1}{c}{\textbf{Characters}} \\
+        \midrule
+        \textbf{Musicals}             & 19,911 & 243,903 & 1,221,731 & 1,523,534 \\
+        \textbf{Books \& Literature}  & 1,777  & 21,389  & 107,618   & 133,041   \\
+        \textbf{Crossover}            & 1,037  & 9,897   & 46,485    & 58,682    \\
+        \textbf{Other Media}          & 334    & 3,263   & 16,298    & 20,096    \\
+        \textbf{Cartoons \& Comics}   & 318    & 3,230   & 16,111    & 20,588    \\
+        \textbf{Movies}               & 197    & 3,155   & 15,256    & 19,193    \\
+        \textbf{Celebrities}          & 110    & 1,351   & 6,510     & 8,210     \\
+        \textbf{Anime \& Manga}       & 101    & 812     & 4,248     & 5,460     \\
+        \textbf{Video Games}          & 98     & 1,423   & 7,672     & 9,363     \\
+        \textbf{Tabletop \& RPGs}     & 70     & 788     & 3,746     & 4,719     \\
+        \textbf{TV-Shows \& Podcasts} & 33     & 224     & 1,016     & 1,440     \\
+        \midrule
+        \textbf{Total}                & 157    & 1,763   & 8,685     & 10,881    \\
+        \bottomrule
+    \end{tabular}
+    \caption[Medians for sentences, words, letters and characters for each genre.]{Medians for sentences, words, letters and characters for each genre.}
+    \label{tab:median-counts}
+\end{table}
+
+Table~\ref{tab:median-counts} shows the median values for the number of sentences, words, letters and characters for each genre.
+While publications about musicals are rather unpopular, with a share of only 0.68\% (2,795 stories), they are the longest, with the highest number of sentences, words, letters and characters.
+In this regard, the statistics about \emph{Books \& Literature} and crossovers can be considered more significant, which in the case of the latter often includes works about written texts as well, with a total share of 28.21\% (116,481) and the second longest with a median of 31,286 words.
+The original works on which these stories are based are also typically written in a fairly lengthy and detailed manner.
+Consequently, the fan fictions that refer to them are often written in the same style and reflect this in their length as well.
+Works about games and \emph{TV-Shows \& Podcasts} are the shortest published stories on average.
+
+% TODO: tab:story-pairings
+% explain pairing types
+% ``characters and observed an overwhelming amount of male-male relationships in fan fiction (91.99%; Tosenberger (2008); Hellekson & Busse (2006); Duggan (2017), Kleindienst & Schmidt (2020) ) compared to the source material.''
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lrr}
+        \toprule
+        \textbf{Pairing} &
+        \multicolumn{1}{c}{\textbf{Frequency}} &
+        \multicolumn{1}{c}{\textbf{Mean}} \\
+        \midrule
+        \textbf{Generic} & 276,188 & 66.50\% \\
+        \textbf{M/M}     & 117,051 & 28.18\% \\
+        \textbf{F/M}     & 14,784  & 3.56\%  \\
+        \textbf{F/F}     & 2,826   & 0.68\%  \\
+        \textbf{Multi}   & 2,702   & 0.65\%  \\
+        \textbf{N/A}     & 1,059   & 0.25\%  \\
+        \textbf{Diverse}   & 693     & 0.17\%  \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison of story pairings sorted by frequency.}
+    \label{tab:story-pairings}
+\end{table}
+
+Pairings in fan fiction are classifications of stories referring to the romantic relationship between characters.
+According to Table~\ref{tab:story-pairings} the most common pairing is the generic one, which is used for stories where relationships do not exist at all or are not addressed.
+The second most common pairing is \emph{M/M} or \emph{MaleSlash}.
+It implies that romantic relationships are present in the story and are also thematized.
+Primarily, it is about romantic relationships between men.
+The opposing classification of this is \emph{F/F} or \emph{FemSlash}, which is used for stories about romantic relationships between women.
+While \emph{F/M} describes heterosexual relationships, \emph{Diverse} relationships that can not be classified and \emph{Multi} relationships that do involve multiple previously defined pairings without a predominant one.
+
+Potential reasons for the share of \emph{MaleSlash} stories being so high are discussed later in this chapter.
+
+After this general statistical analysis of the corpus, the focus in the following section shifts towards the representation of gender in fan fiction.
+
+
+\section{Gender Representation in Fan Fiction}\label{sec:gender-representation-in-fan-fiction}
+
+Previous research has shown that women are underrepresented in a variety of media forms~\citep{Collins2011ContentGo}.
+In popular films, for example, men provide more than two-thirds of the speaking roles~\citep{Neville2019FewerFilms}.
+This section examines whether this can also be observed in the media form of fan fiction.
+The subject of the investigation is the previously acquired corpus on German fan fiction.
+
+\subsection{Analyzing Character Genders}\label{subsec:analyzing-character-genders}
+
+To analyze gender representation in German fan fiction, we used with \emph{Flair}\citep{Akbik2019FLAIR:NLP} a named entity recognition model to extract the story characters' names from the stories and trained an LSTM model to predict their respective gender, as outlined in Section~\ref{sec:determine-character-name-genders}.
+The general results of this approach are presented in Table~\ref{tab:gender-representation}, which compares the number of male, female, and indecisive story characters, that is, story characters whose prediction did not reach a confidence of 0.80\% or higher.
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        \textbf{Archive} &
+        \multicolumn{1}{c}{\textbf{Ratio}} &
+        \multicolumn{1}{c}{\textbf{Males}} &
+        \multicolumn{1}{c}{\textbf{Females}} &
+        \multicolumn{1}{c}{\textbf{Indecisives}} \\
+        \midrule
+        \textbf{FF.de} & 0.63 & 36,000,856 (60.85\%) & 19,471,225 (32.91\%) & 3,695,846 (6.25\%) \\
+        \textbf{AO3}   & 0.74 & 579,925 (71.63\%)    & 189,421 (23.40\%)    & 40,212 (4.97\%)    \\
+        \midrule
+        \textbf{Total} & 0.63 & 36,580,781           & 19,660,646           & 3,736,058          \\
+        \bottomrule
+    \end{tabular}
+    \caption[Gender representation of \emph{FF.de} and \emph{AO3}.]{Gender representation of \emph{FF.de} and \emph{AO3}.
+    Ratio is using the arithmetic mean and depicts only Male and Female proportions with 1 = all male and 0 = all female.
+    Shown percentages are on a per-archive basis.}
+    \label{tab:gender-representation}
+\end{table}
+
+It can be observed that most characters could be predicted sufficiently with only about 5\% of all characters being indecisive.
+The majority of characters appearing in fictional stories are male at 60.85\% on \emph{FF.de} and even more so on \emph{AO3} at 71.63\%.
+Since the number of stories on \emph{AO3} is significantly lower and tends to be less diverse with fandoms such as \emph{Tatort} accounting for a large proportion of published texts, the percentage shown for \emph{FF.de} is likely to be the relevant one, as the unchanged overall ratio suggests.
+
+Consequently, a distinction between the two archives in this context is rather unnecessary and both archives can be considered as a whole.
+Statistics on characteristics that do not achieve a confidence of at least 0.80\% (indecisives) are omitted in the following analysis.
+Furthermore, the ratio will always represent the distribution of male and female units with 1 = all male and 0 = all female.
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{lcrrr}
+        \toprule
+        \textbf{Fandom w/ Genre} &
+        \multicolumn{1}{c}{\textbf{Ratio}} &
+        \multicolumn{1}{c}{\textbf{Males}} &
+        \multicolumn{1}{c}{\textbf{Females}} \\
+        \midrule
+        \textbf{Harry Potter}       & \cellcolor[HTML]{96b7ed}                       &                              &                           \\
+        \emph{Books \& Literature}  & \multirow{-2}{*}{\cellcolor[HTML]{96b7ed}0.69} & \multirow{-2}{*}{13,296,037} & \multirow{-2}{*}{720,302} \\
+        \addlinespace[.2em]
+        \textbf{Musik}              & \cellcolor[HTML]{a3c0f0}                       &                              &                           \\
+        \emph{Celebrities}          & \multirow{-2}{*}{\cellcolor[HTML]{a3c0f0}0.66} & \multirow{-2}{*}{978,215}    & \multirow{-2}{*}{379,515} \\
+        \addlinespace[.2em]
+        \textbf{Naruto}             & \cellcolor[HTML]{c9daf8}                       &                              &                           \\
+        \emph{Anime \& Manga}       & \multirow{-2}{*}{\cellcolor[HTML]{c9daf8}0.57} & \multirow{-2}{*}{571,593}    & \multirow{-2}{*}{393,172} \\
+        \addlinespace[.2em]
+        \textbf{Supernatural}       & \cellcolor[HTML]{3c78d8}                       &                              &                           \\
+        \emph{TV-Shows \& Podcasts} & \multirow{-2}{*}{\cellcolor[HTML]{3c78d8}0.90} & \multirow{-2}{*}{294,194}    & \multirow{-2}{*}{52,332}  \\
+        \addlinespace[.2em]
+        \textbf{Marvel}             & \cellcolor[HTML]{749fe5}                       &                              &                           \\
+        \emph{Movies}               & \multirow{-2}{*}{\cellcolor[HTML]{749fe5}0.77} & \multirow{-2}{*}{318,954}    & \multirow{-2}{*}{107,142} \\
+        \addlinespace[.2em]
+        \textbf{Crossover}          & \cellcolor[HTML]{acc6f2}                       &                              &                           \\
+        \emph{Crossover}            & \multirow{-2}{*}{\cellcolor[HTML]{acc6f2}0.64} & \multirow{-2}{*}{1,068,512}  & \multirow{-2}{*}{506,279} \\
+        \addlinespace[.2em]
+        \textbf{Online Games}       & \cellcolor[HTML]{c5d8f8}                       &                              &                           \\
+        \emph{Video Games}          & \multirow{-2}{*}{\cellcolor[HTML]{c5d8f8}0.58} & \multirow{-2}{*}{365,981}    & \multirow{-2}{*}{266,543} \\
+        \addlinespace[.2em]
+        \textbf{Marvel}             & \cellcolor[HTML]{4e84dc}                       &                              &                           \\
+        \emph{Cartoons \& Comics}   & \multirow{-2}{*}{\cellcolor[HTML]{4e84dc}0.86} & \multirow{-2}{*}{45,670}     & \multirow{-2}{*}{5,157}   \\
+        \addlinespace[.2em]
+        \textbf{Tanz der Vampire}   & \cellcolor[HTML]{a7c3f1}                       &                              &                           \\
+        \emph{Musicals}             & \multirow{-2}{*}{\cellcolor[HTML]{a7c3f1}0.65} & \multirow{-2}{*}{207,777}    & \multirow{-2}{*}{94,481}  \\
+        \addlinespace[.2em]
+        \textbf{Canon}              & \cellcolor[HTML]{c5d8f8}                       &                              &                           \\
+        \emph{Other Media}          & \multirow{-2}{*}{\cellcolor[HTML]{c5d8f8}0.58} & \multirow{-2}{*}{12,146}     & \multirow{-2}{*}{3,308}   \\
+        \addlinespace[.2em]
+        \textbf{Das Schwarze Auge}  & \cellcolor[HTML]{b0c9f3}                       &                              &                           \\
+        \emph{Tabletop \& RPGs}     & \multirow{-2}{*}{\cellcolor[HTML]{b0c9f3}0.63} & \multirow{-2}{*}{19,672}     & \multirow{-2}{*}{16,806}  \\
+        \bottomrule
+    \end{tabular}
+    \caption[Gender representation of characters in top fandoms per genre.]{Gender representation of characters in each top fandom per genre. Sorted by their amount of stories in descending order. Ratio depicts only Male and Female proportions with 1 = all male and 0 = all female.}
+    \label{tab:gender-representation-fandoms}
+\end{table}
+Table~\ref{tab:gender-representation-fandoms} illustrates this by listing the top fandoms for each genre, sorted by the popularity of the genre.
+
+Three fandoms stand out among these: Supernatural, the Marvel cinematic universe, as well as their carton and comic counterpart.
+They all have an even larger amount of male story characters compared to the rest.
+
+In the case of the television series Supernatural, this can be explained by the study conducted by \citet{Kleindienst2020InvestigatingSupernatural} on AO3.
+They found that the texts in this fandom contained male-male relationships at an overwhelming rate of 91.99\%.
+This trend also seems to be applicable to the \emph{FF.de} corpus, though most pairings for \emph{Supernatural} are declared as \emph{Generic} (58.79\%) rather than male-male (38.92\%).
+This will be discussed in more detail later on.
+
+Although there has been an increase in the number of female characters in the \emph{Marvel Universe}, the overall number is still quite low, with a total percentage of 19.88\%, according to \citet{Ray2020GenderViolence}$'$s research on the \emph{Marvel Cinematic Universe}.
+This scarcity of female characters in the canon, as well as an already strong tendency towards male characters in fan fiction in general, has likely led to this heavily male biased ratio.
+
+\subsection{Analyzing Gender-Specific Pronouns}\label{subsec:analyzing-gender-specific-pronouns}
+
+Seen across all fan fiction genres, the distribution of used feminine and masculine personal pronouns is fairly even as shown in Table~\ref{tab:pronouns-distribution}.
+This confirms the tendency that has already been identified with regard to the predominance of male characters in the stories of this community.
+A correlation was to be expected, since the characters introduced in the story are addressed with personal pronouns to the same degree they are occurring.
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.25}
+    \centering
+    \begin{tabular}{lrrr}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Genre}} &
+        \multicolumn{1}{c}{\textbf{Feminine}} &
+        \multicolumn{1}{c}{\textbf{Masculine}} &
+        \multicolumn{1}{c}{\textbf{Total}} \\
+        \midrule
+        \textbf{Books \& Literature}  & \cellcolor[HTML]{F980F6}38.05\% & \cellcolor[HTML]{8DB4F0}61.95\% & 64,144,827 \\
+%        \addlinespace[.2em]
+        \textbf{TV-Shows \& Podcasts} & \cellcolor[HTML]{FA8BF6}35.96\% & \cellcolor[HTML]{8AB1EF}64.04\% & 27,431,159 \\
+%        \addlinespace[.2em]
+        \textbf{Anime \& Manga}       & \cellcolor[HTML]{FB98F6}33.55\% & \cellcolor[HTML]{85AEEF}66.45\% & 18,979,393 \\
+%        \addlinespace[.2em]
+        \textbf{Movies}               & \cellcolor[HTML]{F982F6}37.65\% & \cellcolor[HTML]{8DB3F0}62.35\% & 8,948,841  \\
+%        \addlinespace[.2em]
+        \textbf{Video Games}          & \cellcolor[HTML]{F982F6}37.66\% & \cellcolor[HTML]{8DB3F0}62.34\% & 8,765,844  \\
+%        \addlinespace[.2em]
+        \textbf{Celebrities}          & \cellcolor[HTML]{FFDDF5}20.71\% & \cellcolor[HTML]{6D9EEB}79.29\% & 6,469,078  \\
+%        \addlinespace[.2em]
+        \textbf{Cartoons \& Comics}   & \cellcolor[HTML]{F87AF6}39.08\% & \cellcolor[HTML]{8FB5F0}60.92\% & 4,500,338  \\
+%        \addlinespace[.2em]
+        \textbf{Crossover}            & \cellcolor[HTML]{F986F6}36.86\% & \cellcolor[HTML]{8BB2F0}63.14\% & 2,640,782  \\
+%        \addlinespace[.2em]
+        \textbf{Musicals}             & \cellcolor[HTML]{F97FF6}38.20\% & \cellcolor[HTML]{8EB4F0}61.80\% & 1,564,273  \\
+%        \addlinespace[.2em]
+        \textbf{Tabletop \& RPGs}     & \cellcolor[HTML]{F76DF7}41.39\% & \cellcolor[HTML]{94B8F1}58.61\% & 347,633    \\
+%        \addlinespace[.2em]
+        \textbf{Other Media}          & \cellcolor[HTML]{FDC1F5}25.94\% & \cellcolor[HTML]{77A5ED}74.06\% & 282,224    \\
+%        \addlinespace[.2em]
+        \bottomrule
+    \end{tabular}
+    \caption[Distribution of feminine and masculine personal pronouns per genre.]{Distribution of feminine and masculine personal pronouns per genre.}
+    \label{tab:pronouns-distribution}
+    % TODO: add character gender ratios?
+\end{table}
+
+Moreover, it can be assumed that this ratio would presumably have to shift even further in the direction of the masculine pronouns.
+This is due to the fact that we previously defined the German ``sie'' (she) as a feminine personal pronoun, although it can also refer to the third-person plural or ``you'' in the polite form.
+However, this does not apply analogously to the German ``er'' (he), which is used exclusively for the masculine third-person singular.
+
+The genres \emph{Celebrities} and \emph{Other Media} stand out in comparison with an even greater discrepancy between the use of feminine and masculine pronouns.
+To this extent, this discrepancy could not be observed before when comparing the character genders (see Table~\ref{tab:gender-representation-fandoms}).
+% TODO: explanation?
+\emph{Other Media} is a genre exclusive to \emph{AO3}, much of which consists of canons or original works.
+In this case, the discrepancy was previously seen in the gender ratio of the characters.
+This gives the impression, and also confirms the thesis of \citet{Milli2016BeyondFanfiction}, that canonical works are leaning even more towards a male-dominated narrative, in spite of the fact that only a quite small sample can be referred to for comparison.
+
+\subsection{Adding the User's Sex to the Ratio}\label{subsec:user-sex-comparisons}
+
+\citet{Duggan2020WhoAO3} previously stated that the sex of authors was directly dependent on the portrayal of gender roles in their stories.
+While they analyzed story paratexts and profile biographies on \emph{AO3} for the \emph{Harry Potter} fandom to extract their writer's sex, we were able to use the information provided by the users themselves, since users can submit it to their profiles.
+Due to their approach Duggan had a very small sample size of 1,800 users of which only 265 provided extractable information regarding their gender.
+As a consequence, we limit our analysis to the sex of \emph{FF.de} users, but this is negligible in respect to the rather small number of german stories on \emph{AO3} in any case.
+Users have the option to specify in their profile whether they consider themselves ``weiblich'' (female), ``männlich'' (male) or ``divers'' (diverse).
+While Duggan extracted this information, we had to trust the users to provide it correctly which could lead to deviations.
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        \multicolumn{1}{c}{\textbf{User's Sex}} &
+        \multicolumn{1}{c}{\textbf{Frequency}} &
+        \multicolumn{1}{c}{\textbf{Authors}} &
+        \multicolumn{1}{c}{\textbf{Reviewers}} &
+        \multicolumn{1}{c}{\textbf{Age}} \\
+        \midrule
+        \textbf{Female}  & 87,784 (64.68\%) & 72,959 (68.04\%) & 51,084 (67.89\%) & 26.89 \\
+        \textbf{Male}    & 7,834 (5.77\%)   & 6,291 (5.87\%)   & 4,521 (6.01\%)   & 27.98 \\
+        \textbf{Diverse} & 671 (0.49\%)     & 511 (0.48\%)     & 450 (0.60\%)     & 23.12 \\
+        \textbf{N/A}     & 39,437 (29.06\%) & 27,463 (25.61\%) & 19,185 (25.50\%) & 27.10 \\
+        \midrule
+        \textbf{Total}   & 135,726          & 107,224          & 75,240           & 26.97 \\
+        \bottomrule
+    \end{tabular}
+    \caption[Frequencies of FF.de users regarding their sex.]{Frequencies of FF.de users regarding their sex. The distinction between Authors and Reviewers ist not mutual exclusive, but users are unique for each category. Age is the arithmetic mean of all users for the respective sex.}
+    \label{tab:user-gender-frequencies}
+\end{table}
+
+In Table~\ref{tab:user-gender-frequencies}, we can observe that with about 70.94\% the majority of users state their sex.
+For all sexes, users tend to author stories more likely than review any.
+% Milli: ``Furthermore, they identified that more than half of the fan-authors (52\%) are in return reviewers of other works.''
+
+We therefore cannot confirm Duggans assessment towards the diversity of users, with only 0.49\% stating ``diverse'', but the one towards an overwhelming majority of female writers and readers (about 50\%) and even surpass this with about 65\% female users.
+This is contrary to \citet{Fast2016ShirtlessCommunity} findings on high-level gender statistics from \emph{Wattpad}\footnote{https://www.wattpad.com}, which state that the majority of fan fiction creators tend to be male, at around 54\%.
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lrrrrr}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Genre}} &
+        \multicolumn{1}{c}{\textbf{Frequency}} &
+        \multicolumn{1}{c}{\textbf{Females}} &
+        \multicolumn{1}{c}{\textbf{Males}} &
+        \multicolumn{1}{c}{\textbf{Diverse}} &
+        \multicolumn{1}{c}{\textbf{N/A}} \\
+        \midrule
+        \textbf{Anime \& Manga}       & 107,045 & \cellcolor[HTML]{f86ef6}76.20\% & \cellcolor[HTML]{a0bff4}6.09\%  & \cellcolor[HTML]{def2e8}0.81\% & \cellcolor[HTML]{ffffff}16.90\% \\
+        \textbf{Books \& Literature}  & 106,007 & \cellcolor[HTML]{f870f6}75.30\% & \cellcolor[HTML]{a2c1f4}4.54\%  & \cellcolor[HTML]{e1f3ea}0.77\% & \cellcolor[HTML]{fae4e2}19.39\% \\
+        \textbf{Celebrities}          & 75,854  & \cellcolor[HTML]{f86ef6}76.34\% & \cellcolor[HTML]{a4c2f4}2.65\%  & \cellcolor[HTML]{dcf1e7}0.84\% & \cellcolor[HTML]{f9dbd9}20.17\% \\
+        \textbf{TV-Shows \& Podcasts} & 51,942  & \cellcolor[HTML]{f870f6}75.67\% & \cellcolor[HTML]{a4c2f4}3.07\%  & \cellcolor[HTML]{dcf1e7}0.85\% & \cellcolor[HTML]{f8d9d6}20.41\% \\
+        \textbf{Movies}               & 19,093  & \cellcolor[HTML]{f97df6}70.03\% & \cellcolor[HTML]{9dbdf3}8.00\%  & \cellcolor[HTML]{c0e6d4}1.30\% & \cellcolor[HTML]{f8d6d3}20.67\% \\
+        \textbf{Video Games}          & 16,923  & \cellcolor[HTML]{f989f6}65.24\% & \cellcolor[HTML]{94b7f2}14.31\% & \cellcolor[HTML]{cdebdc}1.09\% & \cellcolor[HTML]{fae4e3}19.36\% \\
+        \textbf{Cartoons \& Comics}   & 9,064   & \cellcolor[HTML]{f988f6}65.72\% & \cellcolor[HTML]{96b9f2}12.41\% & \cellcolor[HTML]{bfe5d2}1.33\% & \cellcolor[HTML]{f8d7d5}20.53\% \\
+        \textbf{Crossover}            & 5,414   & \cellcolor[HTML]{fa8cf6}63.96\% & \cellcolor[HTML]{95b8f2}13.32\% & \cellcolor[HTML]{d3ede0}1.00\% & \cellcolor[HTML]{f5cac7}21.72\% \\
+        \textbf{Musicals}             & 2,738   & \cellcolor[HTML]{f76df7}76.52\% & \cellcolor[HTML]{a4c2f4}3.10\%  & \cellcolor[HTML]{57bb8a}3.03\% & \cellcolor[HTML]{fffbfa}17.35\% \\
+        \textbf{Tabletop \& RPGs}     & 768     & \cellcolor[HTML]{ffddf5}30.21\% & \cellcolor[HTML]{6d9eeb}40.76\% & \cellcolor[HTML]{ffffff}0.26\% & \cellcolor[HTML]{e67c73}28.78\% \\
+        \midrule
+        \textbf{Total}                & 394,848 & 294,765                         & 21,126                          & 3,455                          & 75,502                          \\
+        \bottomrule
+    \end{tabular}
+    \caption[Distribution of authors sex regarding the genre of the stories.]{Distribution of authors sex regarding the genre of the stories. Sorted by the number of distinct authors.}
+    \label{tab:user-sex-per-genre}
+\end{table}
+
+Table~\ref{tab:user-sex-per-genre} illustrates the distribution of authors sex regarding the genre of the stories.
+We can observe that any genre are female-dominated by a large margin, even \emph{Anime \& Manga} which is expected to be not (see \citet{Malone2010FromEconomically}).
+The only exception seem to be tabletop and role-playing games, where male authors are even in the majority.
+It is also particularly interesting that this genre has by far the largest gap in terms of gender information among authors.
+If the trend in this genre's distribution continues, it can be assumed that men are more secretive about these declarations.
+In addition, conclusions can be drawn about people who write works about musicals.
+People in this genre identify themselves more frequently as diverse compared to the other genres.
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lcccc}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Author's}} &
+        \textbf{Female} &
+        \textbf{Male} &
+        \textbf{Feminine} &
+        \textbf{Masculine} \\[-1.5ex]
+        \multicolumn{1}{c}{\textbf{Sex}} &
+        \textbf{Characters} &
+        \textbf{Characters} &
+        \textbf{Pers. Pron.} &
+        \textbf{Pers. Pron.} \\
+        \midrule
+        \textbf{Female} & 35.82\% & 64.18\% & 37.66\% & 62.34\% \\
+        \textbf{Male}   & 34.52\% & 65.48\% & 35.64\% & 64.36\% \\
+        \textbf{Other}  & 31.03\% & 68.97\% & 31.69\% & 68.31\% \\
+        \textbf{N/A}    & 31.85\% & 68.15\% & 31.82\% & 68.18\% \\
+        \bottomrule
+    \end{tabular}
+    \caption[Male and female characters and personal pronouns usage in relation to author's sex.]{Male and female characters and personal pronouns usage in relation to author's sex.}
+    \label{tab:gender-relation-authors-sex}
+\end{table}
+
+In Table~\ref{tab:gender-relation-authors-sex} we illustrate how the sex of the author affects the used character's genders and personal pronouns.
+Since no clear correlation can be established, we can conclude that the author's sex does not influence how the characters are defined in their gender nor how often they are referenced.
+Both men and women alike use equivalent gender ratios in their works.
+
+In the following, we will therefore no longer differentiate between the sexes of the authors.
+
+When examining Table~\ref{tab:gender-ratios-authors-age}, a significant tendency can be identified.
+The figure shows that the older the author, the more likely they are to use male characters and masculine personal pronouns.
+% disruptions of heteronormativity
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Author's Age}} &
+        \textbf{Frequency} &
+        \textbf{Characters Ratio} &
+        \textbf{Pers. Pron. Ratio} \\
+        \midrule
+        \textbf{1-20}  & 15,380 & 0.61 & 0.58 \\
+        \textbf{21-25} & 70,171 & 0.61 & 0.61 \\
+        \textbf{26-30} & 64,502 & 0.63 & 0.61 \\
+        \textbf{31+}   & 56,684 & 0.67 & 0.65 \\
+        \bottomrule
+    \end{tabular}
+    \caption[Male and female characters and personal pronouns usage in relation to authors age.]{Male and female characters and personal pronouns usage in relation to authors age. Ratio depicts male and female proportions with 1 = all male and 0 = all female.}
+    \label{tab:gender-ratios-authors-age}
+\end{table}
+
+\begin{table}[htb]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{lcccccc}
+        \toprule
+        \multicolumn{1}{c}{\textbf{Author's Age}} &
+        \textbf{Generic} &
+        \textbf{M/M} &
+        \textbf{F/M} &
+        \textbf{F/F} &
+        \textbf{Multi} &
+        \textbf{Other} \\
+        \midrule
+        \textbf{1-20}  & 73.52\% & 19.07\% & 5.20\% & 0.62\% & 1.41\% & 0.18\% \\
+        \textbf{21-25} & 71.95\% & 24.12\% & 2.95\% & 0.28\% & 0.62\% & 0.08\% \\
+        \textbf{26-30} & 67.96\% & 28.43\% & 2.56\% & 0.57\% & 0.44\% & 0.04\% \\
+        \textbf{31+}   & 64.25\% & 31.52\% & 3.25\% & 0.57\% & 0.35\% & 0.07\% \\
+        \bottomrule
+    \end{tabular}
+    \caption{Pairings usage in relation to authors age}
+    \label{tab:gender-pairings-authors-age}
+\end{table}
+
+This trend is also reflected in the distribution of used pairings per author's age (Table~\ref{tab:gender-pairings-authors-age}).
+Older generations in the fan fiction community seem more inclined to write about romantic relationships between two men (\emph{male-slash} or \emph{M/M}).
+As \citet{Russ1985PornographyLove} describes in her work ``Pornography by women for women, with love'' women in particular are avid writers of often very explicit male-slash stories.
+This can be explained by the fact that fan fiction is used to express a disruption of heteronormativity, which was and still is to an extent suppressed by social norms.
+The dominance of writings about pure-male relationships can be understood as ``a communal and grass roots critique not only of popular culture but also of heterosexual hegemonic notions of gender and sexuality''~\citep{Jung2002QueeringFiction}.
+While movements and groups such as the \emph{LGBTQ+} community have been fighting for the acceptance of non-heterosexual relationships for decades, the younger generations have grown up with this acceptance.
+Therefore, it is not surprising that the younger generations are less likely to write about homosexual relationships.
+

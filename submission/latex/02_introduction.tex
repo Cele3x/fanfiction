@@ -1,0 +1,27 @@
+\chapter{Introduction}\label{ch:intro}
+
+%Die Einleitung muss nicht zwingend kreativ oder originell sein, sondern ergibt sich aus der Arbeit. Da sich der genaue Inhalt und die Ergebnisse während der Bearbeitung ändern können, muss die Einleitung eventuell später angepasst werden. Inhaltlich grenzt die Einleitung das Thema genau ein mit Formulierungen wie „diese Arbeit beschäftigt sich mit XY“. Danach sollte aufgezeigt werden, inwiefern die Problemstellung für die Medieninformatik relevant ist, sowie die einzelnen Ziele der Arbeit. Abschließend wird der inhaltliche Aufbau der Arbeit erläutert. Allgemeinsätze wie „immer mehr Menschen verwenden Computer“ sollten unbedingt vermieden werden.
+
+Scrolling through fan fiction archives, one can find a wide variety of stories, ranging from the most innocent to the most explicit.
+Archive warnings, age restrictions, or many stories that deviate from heteronormativity have the potential to scare off readers.
+For many, this is precisely the refuge where they can express their artistic abilities, their desires and inclinations in the form of stories, whether deviating from social norms or not.
+But fan fiction sites are not just a platform for sharing stories, it's a vibrant fan community.
+
+While fan fiction is a place for many to flourish, it represents a great opportunity for researchers in the area of natural language processing (NLP), digital social science and digital humanities as well.
+There is no shortage of web-based, freely accessible large bodies of narrative texts with rich metadata.
+For researchers, this offers the potential for large-scale analysis utilizing the wide variety of writing styles, social science observations such as the evolution of social norms in the anonymity of the Internet, or the development and evaluation of new methods~\citep{Yoder2021FanfictionNLP:Fanfiction, Liu2019DENS:Analysis, Muttenthaler2019AuthorshipN-grams, Vilares2019HarryLanguage, Zhang2019GeneratingFiction}.
+Consequently, there are already many studies in that field.
+
+While most of these focus on English-language texts and corpora, in this paper we would like to examine specifically German fan fiction.
+The objective of this work is therefore to acquire a corpus of German fan fiction from suitable sources that is as comprehensive as possible.
+In addition to the stories, users and reviews, this should incorporate all available metadata.
+We then examine the elicited texts with regard to the representation of the characters' genders.
+
+First, we will highlight previously conducted studies that have addressed a similar research question~\ref{ch:rw}.
+Then, potential sources for fanfictional texts will be located and a suitable tool for scraping the data will be evaluated and implemented.
+After the data acquisition is completed, the data is preprocessed by extracting appearing story characters and gender-specific personal pronouns with their frequencies.
+For determining the gender of characters, a suitable neural network model is trained. % recurrent neural network model
+Finally, the results will be presented and discussed.
+
+The entire source code including all web crawlers, programs and scripts, as well as all figures presented in this paper and beyond, and a detailed \emph{README} can be found on \emph{GitHub}\footnote{https://github.com/Cele3x/fanfiction}.
+Due to legal restrictions, the corpus is currently only available on request\footnote{jonathan.sasse@ur.de}.
