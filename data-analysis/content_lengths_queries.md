@@ -47,6 +47,7 @@ db.stories.aggregate([
 	}
 ])
 ```
+
 | \_id | avgNumCharacters | avgNumLetters | avgNumSentences | avgNumWords | maxNumCharacters | maxNumLetters | maxNumSentences | maxNumWords | minNumCharacters | minNumLetters | minNumSentences | minNumWords |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Bücher | 89005.34 | 71239.64 | 1259.67 | 14335.97 | 25734178 | 20753491 | 200957 | 4106713 | 33 | 28 | 1 | 3 |
@@ -60,7 +61,6 @@ db.stories.aggregate([
 | Andere Medien | 45450.7 | 36497.45 | 610.98 | 7298.69 | 2351701 | 1878396 | 33162 | 375075 | 24 | 20 | 1 | 1 |
 | Anime & Manga | 25836.35 | 20631.88 | 371.46 | 4181.77 | 8446766 | 6656468 | 150904 | 1452152 | 32 | 27 | 1 | 2 |
 | Prominente | 13568.8 | 10806.14 | 196.63 | 2221.31 | 2672691 | 2127786 | 38991 | 439905 | 56 | 43 | 1 | 7 |
-
 
 ### Overall Story Content Lengths
 
@@ -108,10 +108,10 @@ db.stories.aggregate([
 	}
 ])
 ```
+
 | avgNumCharacters | avgNumLetters | avgNumSentences | avgNumWords | maxNumCharacters | maxNumLetters | maxNumSentences | maxNumWords | minNumCharacters | minNumLetters | minNumSentences | minNumWords |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | 52565.91507859819 | 42022.92238746691 | 752.3567953347234 | 8487.086095954935 | 25734178 | 20753491 | 200957 | 4106713 | 22 | 15 | 1 | 1 |
-
 
 ### Median Story Content Lengths per Genre
 
@@ -135,20 +135,20 @@ result.forEach((doc) => {
 	print(doc.genre, doc.numSentences, doc.numWords, doc.numLetters, doc.numCharacters)
 })
 ```
+
 | genre                    | numSentences | numWords | numLetters | numCharacters |
 |:-------------------------| :--- | :--- | :--- | :--- |
-| Bücher                   | 1777 | 21389 | 107618 | 133041 |
-| Prominente               | 110 | 1351 | 6510 | 8210 |
-| Anime & Manga            | 101 | 812 | 4248 | 5460 |
-| Serien & Podcasts        | 33 | 224 | 1016 | 1440 |
-| Kino- & TV-Filme         | 197 | 3155 | 15256 | 19193 |
-| Crossover                | 1037 | 9897 | 46485 | 58682 |
-| Computerspiele           | 98 | 1423 | 7672 | 9363 |
-| Cartoons & Comics        | 318 | 3230 | 16111 | 20588 |
-| Musicals                 | 19911 | 243903 | 1221731 | 1523534 |
-| Andere Medien            | 334 | 3263 | 16298 | 20096 |
-| Tabletop- & Rollenspiele | 70 | 788 | 3746 | 4719 |
-
+| Bücher                   | 1,777 | 21,389 | 107,618 | 133,041 |
+| Prominente               | 110 | 1,351 | 6,510 | 8,210 |
+| Anime & Manga            | 101 | 812 | 4,248 | 5,460 |
+| Serien & Podcasts        | 33 | 224 | 1,016 | 1,440 |
+| Kino- & TV-Filme         | 197 | 3,155 | 15,256 | 19,193 |
+| Crossover                | 1,037 | 9,897 | 46,485 | 58,682 |
+| Computerspiele           | 98 | 1,423 | 7,672 | 9,363 |
+| Cartoons & Comics        | 318 | 3,230 | 16,111 | 20,588 |
+| Musicals                 | 19,911 | 243,903 | 1,221,731 | 1,523,534 |
+| Andere Medien            | 334 | 3,263 | 16,298 | 20,096 |
+| Tabletop- & Rollenspiele | 70 | 788 | 3,746 | 4,719 |
 
 ### Overall Median Story Content Length for Sentences
 

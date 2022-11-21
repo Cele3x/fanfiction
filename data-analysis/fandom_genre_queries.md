@@ -1,194 +1,197 @@
 # Fandom and Genre Queries
 
 ### Fandom Frequencies
+
 ```javascript
 let totalStoryFandoms =
-db.stories.aggregate([
-    {
-        $unwind: {
-            path: '$fandoms',
-            preserveNullAndEmptyArrays: true
-        }
-    },
-    {
-        $group: {
-            _id: null,
-            quantity: { $sum: 1 }
-        }
-    }
-]).toArray()[0]['quantity']
+	db.stories.aggregate([
+		{
+			$unwind: {
+				path: '$fandoms',
+				preserveNullAndEmptyArrays: true
+			}
+		},
+		{
+			$group: {
+				_id: null,
+				quantity: {$sum: 1}
+			}
+		}
+	]).toArray()[0]['quantity']
 
 db.stories.aggregate([
-    {
-        $unwind: {
-            path: '$fandoms',
-            preserveNullAndEmptyArrays: true
-        }
-    },
-    {
-        $group : {
-            _id: '$fandoms',
-            quantity: { $sum: 1 }
-        }
-    },
-    {
-        $project: {
-            _id: 0,
-            fandom: '$_id.name',
-            frequency: '$quantity',
-            percent: { $round: [{ $multiply: [{ $divide: [ '$quantity', totalStoryFandoms ]}, 100 ]}, 2]}
-        }
-    },
-    {
-        $sort : { frequency: -1 }
-    },
+	{
+		$unwind: {
+			path: '$fandoms',
+			preserveNullAndEmptyArrays: true
+		}
+	},
+	{
+		$group: {
+			_id: '$fandoms',
+			quantity: {$sum: 1}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			fandom: '$_id.name',
+			frequency: '$quantity',
+			percent: {$round: [{$multiply: [{$divide: ['$quantity', totalStoryFandoms]}, 100]}, 2]}
+		}
+	},
+	{
+		$sort: {frequency: -1}
+	},
 	{
 		$limit: 20
 	}
 ])
 ```
+
 | fandom | frequency | percent |
 | :--- | :--- | :--- |
-| Harry Potter - Harry Potter | 55628 | 13.35 |
-| Naruto - Naruto FFs | 26502 | 6.36 |
-| Internet-Stars - YouTuber | 17750 | 4.26 |
-| Bis\(s\) | 13779 | 3.31 |
-| One Piece | 11532 | 2.77 |
-| Sport - Fußball - Männerfußball | 7860 | 1.89 |
-| Supernatural | 6551 | 1.57 |
-| Musik - One Direction | 6079 | 1.46 |
-| J.R.R. Tolkien - Mittelerde - Der Herr der Ringe | 4894 | 1.17 |
-| Sherlock BBC | 4777 | 1.15 |
-| Navy CIS - Navy CIS | 4406 | 1.06 |
-| Die Tribute von Panem | 4394 | 1.05 |
-| Musik - Tokio Hotel | 4219 | 1.01 |
-| Rick Riordan - Rick Riordan | 4011 | 0.96 |
-| Crossover | 3869 | 0.93 |
-| Detektiv Conan | 3862 | 0.93 |
-| Yu-Gi-Oh! - Allgemein | 3811 | 0.91 |
-| Star Wars | 3781 | 0.91 |
-| Inu Yasha - A Feudal Fairy Tale | 3762 | 0.9 |
-| Hetalia | 3710 | 0.89 |
-
-
+| Harry Potter - Harry Potter | 55,628 | 13.35 |
+| Naruto - Naruto FFs | 26,502 | 6.36 |
+| Internet-Stars - YouTuber | 17,750 | 4.26 |
+| Bis\(s\) | 13,779 | 3.31 |
+| One Piece | 11,532 | 2.77 |
+| Sport - Fußball - Männerfußball | 7,860 | 1.89 |
+| Supernatural | 6,551 | 1.57 |
+| Musik - One Direction | 6,079 | 1.46 |
+| J.R.R. Tolkien - Mittelerde - Der Herr der Ringe | 4,894 | 1.17 |
+| Sherlock BBC | 4,777 | 1.15 |
+| Navy CIS - Navy CIS | 4,406 | 1.06 |
+| Die Tribute von Panem | 4,394 | 1.05 |
+| Musik - Tokio Hotel | 4,219 | 1.01 |
+| Rick Riordan - Rick Riordan | 4,011 | 0.96 |
+| Crossover | 3,869 | 0.93 |
+| Detektiv Conan | 3,862 | 0.93 |
+| Yu-Gi-Oh! - Allgemein | 3,811 | 0.91 |
+| Star Wars | 3,781 | 0.91 |
+| Inu Yasha - A Feudal Fairy Tale | 3,762 | 0.9 |
+| Hetalia | 3,710 | 0.89 |
 
 ### Fandom Tier1 Frequencies
+
 ```javascript
-let totalStoryTier1Fandoms = 
-db.stories.aggregate([
-    {
-        $unwind: {
-            path: '$fandoms.tier1',
-            preserveNullAndEmptyArrays: true
-        }
-    },
-    {
-        $group: {
-            _id: null,
-            quantity: { $sum: 1 }
-        }
-    }
-]).toArray()[0]['quantity']
+let totalStoryTier1Fandoms =
+	db.stories.aggregate([
+		{
+			$unwind: {
+				path: '$fandoms.tier1',
+				preserveNullAndEmptyArrays: true
+			}
+		},
+		{
+			$group: {
+				_id: null,
+				quantity: {$sum: 1}
+			}
+		}
+	]).toArray()[0]['quantity']
 
 db.stories.aggregate([
-    {
-        $unwind: {
-            path: '$fandoms.tier1',
-            preserveNullAndEmptyArrays: true
-        }
-    },
-    {
-        $group : {
-            _id: '$fandoms.tier1',
-            quantity: { $sum: 1 }
-        }
-    },
+	{
+		$unwind: {
+			path: '$fandoms.tier1',
+			preserveNullAndEmptyArrays: true
+		}
+	},
+	{
+		$group: {
+			_id: '$fandoms.tier1',
+			quantity: {$sum: 1}
+		}
+	},
 	{
 		$unwind: {
 			path: '$_id',
 			preserveNullAndEmptyArrays: true
 		}
 	},
-    {
-        $project: {
-            _id: 0,
-            fandom: '$_id',
-            frequency: '$quantity',
-            percent: { $round: [{ $multiply: [{ $divide: [ '$quantity', totalStoryTier1Fandoms ]}, 100 ]}, 2]}
-        }
-    },
-    {
-        $sort : { frequency: -1 }
-    },
+	{
+		$project: {
+			_id: 0,
+			fandom: '$_id',
+			frequency: '$quantity',
+			percent: {$round: [{$multiply: [{$divide: ['$quantity', totalStoryTier1Fandoms]}, 100]}, 2]}
+		}
+	},
+	{
+		$sort: {frequency: -1}
+	},
 	{
 		$limit: 20
 	}
 ])
 ```
+
 | fandom | frequency | percent |
 | :--- | :--- | :--- |
-| Harry Potter | 56038 | 13.57 |
-| Musik | 38917 | 9.42 |
-| Naruto | 27487 | 6.66 |
-| Internet-Stars | 17843 | 4.32 |
-| Bis\(s\) | 13772 | 3.34 |
-| Sport | 12007 | 2.91 |
-| One Piece | 11521 | 2.79 |
-| J.R.R. Tolkien | 8476 | 2.05 |
-| Supernatural | 6515 | 1.58 |
-| Marvel | 5622 | 1.36 |
-| Yu-Gi-Oh! | 5304 | 1.28 |
-| Navy CIS | 4711 | 1.14 |
-| Sherlock BBC | 4656 | 1.13 |
-| Die Tribute von Panem | 4391 | 1.06 |
-| Rick Riordan | 4060 | 0.98 |
-| Schauspieler | 4010 | 0.97 |
-| Detektiv Conan | 3932 | 0.95 |
-| Star Wars | 3916 | 0.95 |
-| Crossover | 3867 | 0.94 |
-| Inu Yasha | 3792 | 0.92 |
-
+| Harry Potter | 56,038 | 13.57 |
+| Musik | 38,917 | 9.42 |
+| Naruto | 27,487 | 6.66 |
+| Internet-Stars | 17,843 | 4.32 |
+| Bis\(s\) | 13,772 | 3.34 |
+| Sport | 12,007 | 2.91 |
+| One Piece | 11,521 | 2.79 |
+| J.R.R. Tolkien | 8,476 | 2.05 |
+| Supernatural | 6,515 | 1.58 |
+| Marvel | 5,622 | 1.36 |
+| Yu-Gi-Oh! | 5,304 | 1.28 |
+| Navy CIS | 4,711 | 1.14 |
+| Sherlock BBC | 4,656 | 1.13 |
+| Die Tribute von Panem | 4,391 | 1.06 |
+| Rick Riordan | 4,060 | 0.98 |
+| Schauspieler | 4,010 | 0.97 |
+| Detektiv Conan | 3,932 | 0.95 |
+| Star Wars | 3,916 | 0.95 |
+| Crossover | 3,867 | 0.94 |
+| Inu Yasha | 3,792 | 0.92 |
 
 ### Genre Frequencies
+
 ```javascript
 let totalStories = db.stories.countDocuments({})
 
 db.stories.aggregate([
-    {
-        $group : {
-            _id: '$genre',
-            quantity: { $sum: 1 }
-        }
-    },
-    {
-        $project: {
-            _id: 0,
-            genre: '$_id',
-            frequency: '$quantity',
-            percent: { $round: [{ $multiply: [{ $divide: [ '$quantity', totalStories ]}, 100 ]}, 2]}
-        }
-    },
-    {
-        $sort : { frequency: -1 }
-    }
+	{
+		$group: {
+			_id: '$genre',
+			quantity: {$sum: 1}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			genre: '$_id',
+			frequency: '$quantity',
+			percent: {$round: [{$multiply: [{$divide: ['$quantity', totalStories]}, 100]}, 2]}
+		}
+	},
+	{
+		$sort: {frequency: -1}
+	}
 ])
 ```
+
 | frequency | genre | percent |
 | :--- | :--- | :--- |
-| 111067 | Bücher | 26.9 |
-| 108616 | Anime & Manga | 26.3 |
-| 77568 | Prominente | 18.79 |
-| 58128 | Serien & Podcasts | 14.08 |
-| 19889 | Kino- & TV-Filme | 4.82 |
-| 17462 | Computerspiele | 4.23 |
-| 10330 | Cartoons & Comics | 2.5 |
-| 5414 | Crossover | 1.31 |
-| 2795 | Musicals | 0.68 |
+| 111,067 | Bücher | 26.9 |
+| 108,616 | Anime & Manga | 26.3 |
+| 77,568 | Prominente | 18.79 |
+| 58,128 | Serien & Podcasts | 14.08 |
+| 19,889 | Kino- & TV-Filme | 4.82 |
+| 17,462 | Computerspiele | 4.23 |
+| 10,330 | Cartoons & Comics | 2.5 |
+| 5,414 | Crossover | 1.31 |
+| 2,795 | Musicals | 0.68 |
 | 886 | Andere Medien | 0.21 |
 | 768 | Tabletop- & Rollenspiele | 0.19 |
 
-
 ### Most Used Genre per Fandom
+
 ```javascript
 db.stories.aggregate([
 	{
@@ -198,63 +201,64 @@ db.stories.aggregate([
 		}
 	},
 	{
-        $group : {
-            _id: { fandom: '$fandoms.tier1', genre: '$genre' },
-            quantity: { $sum: 1 }
-        }
-    },
-    {
-        $project: {
-            _id: 0,
-            fandom: '$_id.fandom',
-            genre: '$_id.genre',
-            frequency: '$quantity',
-        }
-    },
-    {
-        $group: {
-            _id: '$genre',
-            maxScores: {
-                $max: {
-                    frequency: '$frequency', fandom: '$fandom'
-                }
-            }
-        }
-    },
-    {
-        $project: {
-            _id: 0,
-            genre: '$_id',
-            fandom: '$maxScores.fandom',
-            frequency: '$maxScores.frequency'
+		$group: {
+			_id: {fandom: '$fandoms.tier1', genre: '$genre'},
+			quantity: {$sum: 1}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			fandom: '$_id.fandom',
+			genre: '$_id.genre',
+			frequency: '$quantity',
+		}
+	},
+	{
+		$group: {
+			_id: '$genre',
+			maxScores: {
+				$max: {
+					frequency: '$frequency', fandom: '$fandom'
+				}
+			}
+		}
+	},
+	{
+		$project: {
+			_id: 0,
+			genre: '$_id',
+			fandom: '$maxScores.fandom',
+			frequency: '$maxScores.frequency'
 
-        }
-    },
-    {
-        $sort: { frequency: -1 }
-    }
+		}
+	},
+	{
+		$sort: {frequency: -1}
+	}
 ])
 ```
+
 | fandom | frequency | genre |
 | :--- | :--- | :--- |
-| Harry Potter | 56191 | Bücher |
-| Musik | 39214 | Prominente |
-| Naruto | 27501 | Anime & Manga |
-| Supernatural | 6530 | Serien & Podcasts |
-| Marvel | 5314 | Kino- & TV-Filme |
-| Crossover | 3868 | Crossover |
-| Onlinespiele | 2842 | Computerspiele |
-| Marvel | 1166 | Cartoons & Comics |
+| Harry Potter | 56,191 | Bücher |
+| Musik | 39,214 | Prominente |
+| Naruto | 27,501 | Anime & Manga |
+| Supernatural | 6,530 | Serien & Podcasts |
+| Marvel | 5,314 | Kino- & TV-Filme |
+| Crossover | 3,868 | Crossover |
+| Onlinespiele | 2,842 | Computerspiele |
+| Marvel | 1,166 | Cartoons & Comics |
 | Tanz der Vampire | 794 | Musicals |
 | Kanon | 628 | Andere Medien |
 | Das Schwarze Auge | 185 | Tabletop- & Rollenspiele |
 
-
 ### Genre Share per Source
+
 ```javascript
 let genres = ['Bücher', 'Prominente', 'Anime & Manga', 'Serien & Podcasts', 'Kino- & TV-Filme', 'Crossover', 'Computerspiele', 'Cartoons & Comics', 'Musicals', 'Andere Medien', 'Tabletop- & Rollenspiele']
-let totalStoriesFF = db.stories.countDocuments({ source: 'FanFiktion' })
-let totalStoriesAO3 = db.stories.countDocuments({ source: 'ArchiveOfOurOwn' })
+let totalStoriesFF = db.stories.countDocuments({source: 'FanFiktion'})
+let totalStoriesAO3 = db.stories.countDocuments({source: 'ArchiveOfOurOwn'})
 
 db.stories.aggregate([
 	{
@@ -265,7 +269,7 @@ db.stories.aggregate([
 	{
 		$group: {
 			_id: '$source',
-			count: { $sum: 1 }
+			count: {$sum: 1}
 		}
 	},
 	{
@@ -273,15 +277,16 @@ db.stories.aggregate([
 			_id: 0,
 			source: '$_id',
 			count: 1,
-			percent: { $round: [{ $multiply: [{ $divide: [ '$count', { $cond: { if: { $eq: ['$_id', 'FanFiktion'] }, then: totalStoriesFF, else: totalStoriesAO3 } } ]}, 100 ]}, 2]}
+			percent: {$round: [{$multiply: [{$divide: ['$count', {$cond: {if: {$eq: ['$_id', 'FanFiktion']}, then: totalStoriesFF, else: totalStoriesAO3}}]}, 100]}, 2]}
 		}
 	}
 ])
 ```
 
 ### Top Fandoms on FanFiktion.de per Genre
+
 ```javascript
-let totalStoriesFF = db.stories.countDocuments({ source: 'FanFiktion' })
+let totalStoriesFF = db.stories.countDocuments({source: 'FanFiktion'})
 
 db.stories.aggregate([
 	{
@@ -292,7 +297,7 @@ db.stories.aggregate([
 	{
 		$group: {
 			_id: '$fandoms.tier1',
-			count: { $sum: 1 }
+			count: {$sum: 1}
 		}
 	},
 	{
@@ -303,44 +308,45 @@ db.stories.aggregate([
 			_id: 0,
 			fandom: '$_id',
 			count: 1,
-			percent: { $round: [{ $multiply: [{ $divide: [ '$count', totalStoriesFF ]}, 100 ]}, 2]}
+			percent: {$round: [{$multiply: [{$divide: ['$count', totalStoriesFF]}, 100]}, 2]}
 		}
 	},
 	{
-		$sort: { count: -1 }
+		$sort: {count: -1}
 	},
 	{
 		$limit: 20
 	}
 ])
 ```
+
 | count | fandom | percent |
 | :--- | :--- | :--- |
-| 54405 | Harry Potter | 13.78 |
-| 38568 | Musik | 9.77 |
-| 27303 | Naruto | 6.91 |
-| 17830 | Internet-Stars | 4.52 |
-| 13734 | Bis\(s\) | 3.48 |
-| 11443 | One Piece | 2.9 |
-| 11440 | Sport | 2.9 |
-| 8199 | J.R.R. Tolkien | 2.08 |
-| 6045 | Supernatural | 1.53 |
-| 5311 | Marvel | 1.35 |
-| 5185 | Yu-Gi-Oh! | 1.31 |
-| 4676 | Navy CIS | 1.18 |
-| 4372 | Die Tribute von Panem | 1.11 |
-| 4284 | Sherlock BBC | 1.08 |
-| 4044 | Rick Riordan | 1.02 |
-| 3907 | Schauspieler | 0.99 |
-| 3892 | Detektiv Conan | 0.99 |
-| 3867 | Crossover | 0.98 |
-| 3784 | Inu Yasha | 0.96 |
-| 3756 | Star Wars | 0.95 |
-
+| 54,405 | Harry Potter | 13.78 |
+| 38,568 | Musik | 9.77 |
+| 27,303 | Naruto | 6.91 |
+| 17,830 | Internet-Stars | 4.52 |
+| 13,734 | Bis\(s\) | 3.48 |
+| 11,443 | One Piece | 2.9 |
+| 11,440 | Sport | 2.9 |
+| 8,199 | J.R.R. Tolkien | 2.08 |
+| 6,045 | Supernatural | 1.53 |
+| 5,311 | Marvel | 1.35 |
+| 5,185 | Yu-Gi-Oh! | 1.31 |
+| 4,676 | Navy CIS | 1.18 |
+| 4,372 | Die Tribute von Panem | 1.11 |
+| 4,284 | Sherlock BBC | 1.08 |
+| 4,044 | Rick Riordan | 1.02 |
+| 3,907 | Schauspieler | 0.99 |
+| 3,892 | Detektiv Conan | 0.99 |
+| 3,867 | Crossover | 0.98 |
+| 3,784 | Inu Yasha | 0.96 |
+| 3,756 | Star Wars | 0.95 |
 
 ### Top Fandoms on ArchiveOfOurOwn per Genre
+
 ```javascript
-let totalStoriesAO3 = db.stories.countDocuments({ source: 'ArchiveOfOurOwn' })
+let totalStoriesAO3 = db.stories.countDocuments({source: 'ArchiveOfOurOwn'})
 
 db.stories.aggregate([
 	{
@@ -354,7 +360,7 @@ db.stories.aggregate([
 	{
 		$group: {
 			_id: '$fandoms.tier1',
-			count: { $sum: 1 }
+			count: {$sum: 1}
 		}
 	},
 	{
@@ -362,22 +368,23 @@ db.stories.aggregate([
 			_id: 0,
 			fandom: '$_id',
 			count: 1,
-			percent: { $round: [{ $multiply: [{ $divide: [ '$count', totalStoriesAO3 ]}, 100 ]}, 2]}
+			percent: {$round: [{$multiply: [{$divide: ['$count', totalStoriesAO3]}, 100]}, 2]}
 		}
 	},
 	{
-		$sort: { count: -1 }
+		$sort: {count: -1}
 	},
-    {
-        $limit: 20
-    }
+	{
+		$limit: 20
+	}
 ])
 ```
+
 | count | fandom                                 | percent |
 | :--- |:---------------------------------------| :--- |
-| 2978 | Tatort                                 | 16.48 |
-| 1793 | Harry Potter                           | 9.92 |
-| 1234 | Marvel                                 | 6.83 |
+| 2,978 | Tatort                                 | 16.48 |
+| 1,793 | Harry Potter                           | 9.92 |
+| 1,234 | Marvel                                 | 6.83 |
 | 671 | Kanon                                  | 3.71 |
 | 663 | Sport                                  | 3.67 |
 | 654 | Musik                                  | 3.62 |

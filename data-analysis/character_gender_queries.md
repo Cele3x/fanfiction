@@ -1,58 +1,73 @@
 # Character Gender Queries
 
 ### Genders per Source
+
 ```javascript
 db.stories.aggregate([
 	{
 		$group: {
 			_id: '$source',
-			totalFemales: { $sum: '$genders.females' },
-			totalMales: { $sum: '$genders.males' },
-			totalIndecisives: { $sum: '$genders.indecisives' },
-			ratio: { $avg: '$genders.ratio' },
+			totalFemales: {$sum: '$genders.females'},
+			totalMales: {$sum: '$genders.males'},
+			totalIndecisives: {$sum: '$genders.indecisives'},
+			ratio: {$avg: '$genders.ratio'},
 		}
 	}
 ])
 ```
+
 | \_id | ratio | totalFemales | totalIndecisives | totalMales |
 | :--- | :--- | :--- | :--- | :--- |
-| FanFiktion | 0.6285130584043107 | 19471225 | 3695846 | 36000856 |
-| ArchiveOfOurOwn | 0.7353494962216625 | 189421 | 40212 | 579925 |
-
+| FanFiktion | 0.6,285,130,584,043,107 | 19,471,225 | 3,695,846 | 36,000,856 |
+| ArchiveOfOurOwn | 0.7,353,494,962,216,625 | 189,421 | 40,212 | 579,925 |
 
 ### Genders per Genre
+
 ```javascript
 db.stories.aggregate([
 	{
 		$group: {
 			_id: '$genre',
-			totalFemales: { $sum: '$genders.females' },
-			totalMales: { $sum: '$genders.males' },
-			totalIndecisives: { $sum: '$genders.indecisives' },
-			ratio: { $avg: '$genders.ratio' },
+			totalFemales: {$sum: '$genders.females'},
+			totalMales: {$sum: '$genders.males'},
+			totalIndecisives: {$sum: '$genders.indecisives'},
+			ratio: {$avg: '$genders.ratio'},
 		}
 	}
 ])
 ```
+
 | \_id | ratio | totalFemales | totalIndecisives | totalMales |
 | :--- | :--- | :--- | :--- | :--- |
-| Crossover | 0.638980232772954 | 773183 | 155201 | 1527588 |
-| Prominente | 0.6670885526886526 | 1000562 | 854395 | 2243567 |
-| Andere Medien | 0.5768648648648649 | 3885 | 478 | 13609 |
-| Kino- & TV-Filme | 0.6594509874977351 | 522784 | 89729 | 977424 |
-| Serien & Podcasts | 0.6888797325662753 | 1698057 | 136927 | 3299728 |
-| Anime & Manga | 0.5862640507037002 | 3852594 | 917125 | 5561304 |
-| Bücher | 0.6499435483870968 | 8670624 | 1067891 | 17791416 |
-| Computerspiele | 0.6251042339538434 | 1916965 | 297749 | 3124967 |
-| Cartoons & Comics | 0.656042924935289 | 848013 | 145802 | 1473783 |
-| Musicals | 0.5645550692924872 | 309169 | 51516 | 464281 |
-| Tabletop- & Rollenspiele | 0.6516015625 | 64810 | 19245 | 103114 |
-
+| Crossover | 0.638,980,232,772,954 | 773,183 | 155,201 | 1,527,588 |
+| Prominente | 0.6,670,885,526,886,526 | 1,000,562 | 854,395 | 2,243,567 |
+| Andere Medien | 0.5,768,648,648,648,649 | 3,885 | 478 | 13,609 |
+| Kino- & TV-Filme | 0.6,594,509,874,977,351 | 522,784 | 89,729 | 977,424 |
+| Serien & Podcasts | 0.6,888,797,325,662,753 | 1,698,057 | 136,927 | 3,299,728 |
+| Anime & Manga | 0.5,862,640,507,037,002 | 3,852,594 | 917,125 | 5,561,304 |
+| Bücher | 0.6,499,435,483,870,968 | 8,670,624 | 1,067,891 | 17,791,416 |
+| Computerspiele | 0.6,251,042,339,538,434 | 1,916,965 | 297,749 | 3,124,967 |
+| Cartoons & Comics | 0.656,042,924,935,289 | 848,013 | 145,802 | 1,473,783 |
+| Musicals | 0.5,645,550,692,924,872 | 309,169 | 51,516 | 464,281 |
+| Tabletop- & Rollenspiele | 0.6,516,015,625 | 64,810 | 19,245 | 103,114 |
 
 ### Genders per Top Fandom for each Genre
+
 ```javascript
 let genres = ['Bücher', 'Prominente', 'Anime & Manga', 'Serien & Podcasts', 'Kino- & TV-Filme', 'Crossover', 'Computerspiele', 'Cartoons & Comics', 'Musicals', 'Andere Medien', 'Tabletop- & Rollenspiele']
-let topFandoms = {'Bücher': 'Harry Potter', 'Prominente': 'Musik', 'Anime & Manga': 'Naruto', 'Serien & Podcasts': 'Supernatural', 'Kino- & TV-Filme': 'Marvel', 'Crossover': 'Crossover', 'Computerspiele': 'Onlinespiele', 'Cartoons & Comics': 'Marvel', 'Musicals': 'Tanz der Vampire', 'Andere Medien': 'Kanon', 'Tabletop- & Rollenspiele': 'Das Schwarze Auge'}
+let topFandoms = {
+	'Bücher': 'Harry Potter',
+	'Prominente': 'Musik',
+	'Anime & Manga': 'Naruto',
+	'Serien & Podcasts': 'Supernatural',
+	'Kino- & TV-Filme': 'Marvel',
+	'Crossover': 'Crossover',
+	'Computerspiele': 'Onlinespiele',
+	'Cartoons & Comics': 'Marvel',
+	'Musicals': 'Tanz der Vampire',
+	'Andere Medien': 'Kanon',
+	'Tabletop- & Rollenspiele': 'Das Schwarze Auge'
+}
 
 db.stories.aggregate([
 	{
@@ -64,24 +79,25 @@ db.stories.aggregate([
 	{
 		$group: {
 			_id: null,
-			total_females: { $sum: '$genders.females' },
-			total_males: { $sum: '$genders.males' },
-			total_indecisives: { $sum: '$genders.indecisives' },
-			ratio: { $avg: '$genders.ratio' },
+			total_females: {$sum: '$genders.females'},
+			total_males: {$sum: '$genders.males'},
+			total_indecisives: {$sum: '$genders.indecisives'},
+			ratio: {$avg: '$genders.ratio'},
 		}
 	}
 ])
 ```
+
 | genre                    | totaleFemales | totalMales | totalIndecisives | ratio |
 |:-------------------------| :--- | :--- | :--- | :--- |
-| Bücher                   | 5610389 | 13296037 | 720302 | 0.6858851215499908 |
-| Prominente               | 379515 | 978215 | 115466 | 0.6640794681428978 |
-| Anime & Manga            | 393172 | 571593 | 109423 | 0.5739952494061757 |
-| Serien & Podcasts        | 52332 | 294194 | 7557 | 0.8967435359888191 |
-| Kino- & TV-Filme         | 107142 | 318954 | 11002 | 0.7740978348035285 |
-| Crossover                | 506279 | 1068512 | 87774 | 0.6424127230411172 |
-| Computerspiele           | 266543 | 365981 | 37953 | 0.58272565742715 |
-| Cartoons & Comics        | 5157 | 45670 | 1520 | 0.8648461538461538 |
-| Musicals                 | 94481 | 207777 | 9398 | 0.6479150579150579 |
-| Andere Medien            | 3308 | 12146 | 439 | 0.5768493150684931 |
-| Tabletop- & Rollenspiele | 16806 | 19672 | 3997 | 0.6261621621621621 |
+| Bücher                   | 5,610,389 | 13,296,037 | 720,302 | 0.6,858,851,215,499,908 |
+| Prominente               | 379,515 | 978,215 | 115,466 | 0.6,640,794,681,428,978 |
+| Anime & Manga            | 393,172 | 571,593 | 109,423 | 0.5,739,952,494,061,757 |
+| Serien & Podcasts        | 52,332 | 294,194 | 7,557 | 0.8,967,435,359,888,191 |
+| Kino- & TV-Filme         | 107,142 | 318,954 | 11,002 | 0.7,740,978,348,035,285 |
+| Crossover                | 506,279 | 1,068,512 | 87,774 | 0.6,424,127,230,411,172 |
+| Computerspiele           | 266,543 | 365,981 | 37,953 | 0.58,272,565,742,715 |
+| Cartoons & Comics        | 5,157 | 45,670 | 1,520 | 0.8,648,461,538,461,538 |
+| Musicals                 | 94,481 | 207,777 | 9,398 | 0.6,479,150,579,150,579 |
+| Andere Medien            | 3,308 | 12,146 | 439 | 0.5,768,493,150,684,931 |
+| Tabletop- & Rollenspiele | 16,806 | 19,672 | 3,997 | 0.6,261,621,621,621,621 |
