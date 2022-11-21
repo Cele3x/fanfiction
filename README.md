@@ -7,6 +7,16 @@
 This repository was used for the master thesis "Acquisition of a German Fan Fiction Corpus and Analysis in the Context of Gender Representation" at the University of Regensburg.
 It contains all source code necessary to reproduce the results of the thesis.
 
+## [Submission](submission)
+
+This directory contains the final submission of the thesis.
+
+**Content**
+
+- [Sasse_Jonathan_Masters_Thesis.pdf](submission/Sasse_Jonathan_Masters_Thesis.pdf): Final thesis document.
+- [figures](submission/figures): Contains all figures from database queries listed in [Data Analysis](data-analysis).
+- [latex](submission/latex): Contains the LaTeX source code of the thesis.
+
 ## [Data Acquisition](data-acquisition)
 
 This directory contains the source code for the data acquisition. The web scrapers for acquiring fan fiction data is written in Python and uses the [Scrapy](https://scrapy.org) framework.
