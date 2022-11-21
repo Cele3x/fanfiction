@@ -282,6 +282,28 @@ db.stories.aggregate([
 	}
 ])
 ```
+| genre                    | archive         | count  | percent |
+|:-------------------------|:----------------|:-------|:--------|
+| Bücher                   | ArchiveOfOurOwn | 5060   | 27.99   |
+| Bücher                   | FanFiktion      | 106007 | 26.85   |
+| Prominente               | ArchiveOfOurOwn | 1714   | 9.48    |
+| Prominente               | FanFiktion      | 75854  | 19.21   |
+| Anime & Manga            | ArchiveOfOurOwn | 1571   | 8.69    |
+| Anime & Manga            | FanFiktion      | 107045 | 27.11   |
+| Serien & Podcasts        | FanFiktion      | 51942  | 13.15   |
+| Serien & Podcasts        | ArchiveOfOurOwn | 6186   | 34.22   |
+| Kino- & TV-Filme         | FanFiktion      | 19093  | 4.84    |
+| Kino- & TV-Filme         | ArchiveOfOurOwn | 796    | 4.4     |
+| Crossover                | FanFiktion      | 5414   | 1.37    |
+| Computerspiele           | FanFiktion      | 16923  | 4.29    |
+| Computerspiele           | ArchiveOfOurOwn | 539    | 2.98    |
+| Cartoons & Comics        | ArchiveOfOurOwn | 1266   | 7       |
+| Cartoons & Comics        | FanFiktion      | 9064   | 2.3     |
+| Musicals                 | FanFiktion      | 2738   | 0.69    |
+| Musicals                 | ArchiveOfOurOwn | 57     | 0.32    |
+| Andere Medien            | ArchiveOfOurOwn | 886    | 4.9     |
+| Tabletop- & Rollenspiele | FanFiktion      | 768    | 0.19    |
+
 
 ### Top Fandoms on FanFiktion.de per Genre
 
