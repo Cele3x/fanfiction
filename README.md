@@ -14,7 +14,7 @@ This directory contains the final submission of the thesis.
 **Content**
 
 - [Sasse_Jonathan_Masters_Thesis.pdf](submission/Sasse_Jonathan_Masters_Thesis.pdf): Final thesis document.
-- [figures](submission/figures): Contains all figures from database queries listed in [Data Analysis](data-analysis).
+- [figures.md](submission/figures.md): Contains all figures from database queries listed in [Data Analysis](data-analysis).
 - [latex](submission/latex): Contains the LaTeX source code of the thesis.
 
 ## [Data Acquisition](data-acquisition)
