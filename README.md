@@ -64,9 +64,9 @@ models [Flair](https://github.com/flairNLP/flair) and [spaCy](https://spacy.io).
 
 ## [Gender Classification](gender-classification)
 
-This directory contains all source code used for predicting all previously tagged person tokens (PER) by the NER models.
+This directory contains all source code used for predicting previously tagged person tokens (PER) by the NER models.
 Character genders are predicted after training a LSTM model using [TensorFlow](https://www.tensorflow.org) and [Keras](https://keras.io).
-Names for the training are using the [NLTK](http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/areas/nlp/corpora/names/)
+Names for training the model were acquired from the [NLTK](http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/areas/nlp/corpora/names/)
 corpus, [US Baby Names from Social Security Card Applications](https://catalog.data.gov/dataset/baby-names-from-social-security-card-applications-national-data) and scraped from [babynames.com](https://babynames.com).
 
 **Content**
