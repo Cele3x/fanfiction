@@ -38,7 +38,7 @@ There are multiple Spiders for the archives [FanFiktion.de](https://www.fanfikti
     - [rename_fandoms.py](data-acquisition/scripts/rename_fandoms.py): Uses the CSV file generated in match_fandoms.py to rename AO3 fandoms matching the FF.de names.
     - [simple_scraper.py](data-acquisition/scripts/simple_scraper.py): Simple scraper using BeautifulSoup for filling smaller data gaps in previously crawled data.
 
-### [Token Classification](token-classification)
+## [Token Classification](token-classification)
 
 This directory contains all source code used for the classification of occurring characters in the fan fiction corpus. The classification is done using the pre-trained named entity recognition (NER)
 models [Flair](https://github.com/flairNLP/flair) and [spaCy](https://spacy.io).
@@ -62,7 +62,7 @@ models [Flair](https://github.com/flairNLP/flair) and [spaCy](https://spacy.io).
   with [spaCy](https://spacy.io). Results are stored in the associated chapter database documents. This script processes chapters in iterative mode for being able to lock processed document.
 - [cleanse_persons_spacy.py](token-classification/cleanse_persons_spacy.py): Persons extracted by [spaCy](https://spacy.io) frequently contain verbs and other incorrect text parts. This script removes those.
 
-### [Gender Classification](gender-classification)
+## [Gender Classification](gender-classification)
 
 This directory contains all source code used for predicting all previously tagged person tokens (PER) by the NER models.
 Character genders are predicted after training a LSTM model using [TensorFlow](https://www.tensorflow.org) and [Keras](https://keras.io).
@@ -77,7 +77,7 @@ corpus, [US Baby Names from Social Security Card Applications](https://catalog.d
 - [predict_person_genders.py](gender-classification/predict_person_genders.py): Traverse the character names list and predict their gender.
 - [set_person_genders.py](gender-classification/set_person_genders.py): Sets and counts gender occurrences for stories using the previously predicted names list.
 
-### [Data Analysis](data-analysis)
+## [Data Analysis](data-analysis)
 
 All queries for tables and figures used in the thesis are listed in this directory. They are structured after their purpose and displayed in a Markdown document.
 
@@ -91,7 +91,7 @@ All queries for tables and figures used in the thesis are listed in this directo
 - [Pronoun Queries](data-analysis/pronoun_queries.md): Queries for gender representation per pronoun usage with and without genre.
 - [User Gender Queries](data-analysis/user_gender_queries.md): Queries for user statistics on FanFiktion.de.
 
-### Miscellaneous
+## Miscellaneous
 
 - [utils/db_connect.py](utils/db_connect.py): Provides functions for connecting to and disconnecting from a MongoDB database while using environment specific variables.
 - [scripts/restructure_db.py](scripts/restructure_db.py): Restructures the database from a relational database structure to a non-relational MongoDB database for being able to use the full MongoDB performance and
