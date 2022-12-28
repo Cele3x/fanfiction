@@ -1,9 +1,5 @@
 # Acquisition of a German Fan Fiction Corpus and Analysis in the Context of Gender Representation
 
-<!-- add a banner here ?
-![Starting Scene](https://github.com/Cele3x/research-seminar/blob/master/submission/Images/teaser.png)
--->
-
 This repository was used for the master thesis "Acquisition of a German Fan Fiction Corpus and Analysis in the Context of Gender Representation" at the University of Regensburg.
 It contains all source code necessary to reproduce the results of the thesis.
 
